@@ -13,3 +13,6 @@
 
 # IntelijIdea
 .idea
+
+# Env Vars
+.env.sh
