@@ -77,33 +77,33 @@ func (v *VspherePerfManager) Vms() ([]managedObject, error) {
 	return vms, nil
 }
 
-//func (v *VspherePerfManager) Hosts() ([]core.managedObject, error) {
+func (v *VspherePerfManager) Hosts()  ([]managedObject, error) {
 
-	//objects, err := core.ManagedObjects(v.client, []string{"HostSystem"})
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//properties := []types.PropertySpec{{
-	//	Type   : "ManagedEntity",
-	//	PathSet : []string{"name"},
-	//}}
-	//
-	//hosts, err := core.GetManagedObject(v.client, objects, properties)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//for _, host := range hosts {
-	//	err := core.Query(v.client, &host, v.config.QueryInterval, v.metricsInfo )
-	//
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//}
-	//return hosts, nil
-//}
+	objects, err := v.managedObjects([]string{"HostSystem"})
+	if err != nil {
+		return nil, err
+	}
+
+	properties := []types.PropertySpec{{
+		Type   : "ManagedEntity",
+		PathSet : []string{"name"},
+	}}
+
+	hosts, err := v.getManagedObject(objects, properties)
+	if err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	for key := range hosts {
+		err := v.query(&hosts[key])
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	return hosts, nil
+}
