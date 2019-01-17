@@ -6,5 +6,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/stretchr/testify v1.3.0 // indirect
+	github.com/thoas/go-funk v0.0.0-20181020164546-fbae87fb5b5c
 	github.com/vmware/govmomi v0.19.0
 )

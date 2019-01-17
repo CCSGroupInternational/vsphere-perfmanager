@@ -17,7 +17,7 @@ func (v *VspherePerfManager) query(managedObject *managedObject) error {
 	startTime, endTime := getStartEndTime(v.config.QueryInterval)
 
 	if len(v.config.Metrics) != 0 {
-		metrics = v.getMetricsFromConfig(managedObject.Entity, startTime, endTime )
+		metrics = v.getMetricsFromConfig(managedObject, startTime, endTime )
 	} else {
 		metrics = v.getAvailablePerfMetrics(managedObject.Entity, startTime, endTime)
 	}

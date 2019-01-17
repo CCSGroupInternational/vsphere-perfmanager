@@ -46,36 +46,37 @@ func (v *VspherePerfManager) getAvailablePerfMetrics(entity types.ManagedObjectR
 	return createPerfQuerySpec(entity, startTime, endTime, perfRes.Returnval)
 }
 
-func (v *VspherePerfManager) getMetricsFromConfig(entity types.ManagedObjectReference, startTime time.Time, endTime time.Time) []types.PerfQuerySpec {
+func (v *VspherePerfManager) getMetricsFromConfig(managedObject *managedObject, startTime time.Time, endTime time.Time) []types.PerfQuerySpec {
 
 	var availableMetrics []types.PerfQuerySpec
 
-	if hasMetricsWithAllInstances(v.config.Metrics[config.EntitiesType(entity.Type)]) {
-		availableMetrics = v.getAvailablePerfMetrics(entity, startTime, endTime)
+	if hasMetricsWithAllInstances(v.config.Metrics[config.EntitiesType(managedObject.Entity.Type)]) {
+		availableMetrics = v.getAvailablePerfMetrics(managedObject.Entity, startTime, endTime)
 	}
 
 	var metricsIds []types.PerfMetricId
 
-	for _, metricDef := range v.config.Metrics[config.EntitiesType(entity.Type)] {
+	for _, metricDef := range v.config.Metrics[config.EntitiesType(managedObject.Entity.Type)] {
+		if checkEntity(metricDef, managedObject.getProperty("name")) {
+			metrics := getMetricsInfoFromConfig(v.metricsInfo, metricDef)
 
-		metrics := getMetricsInfoFromConfig(v.metricsInfo, metricDef)
+			for _, info := range metrics {
 
-		for _, info := range metrics {
+				if len(metricDef.Instance) == 0 || metricDef.Instance[0] == config.ALL[0] {
+					metricsIds = setAllInstancesToMetrics(availableMetrics[0].MetricId, info, metricsIds)
+					continue
+				}
 
-			if len(metricDef.Instance) == 0 || metricDef.Instance[0] == config.AllInstances[0] {
-				metricsIds = setAllInstancesToMetrics(availableMetrics[0].MetricId, info, metricsIds)
-				continue
-			}
-
-			for _, instance := range metricDef.Instance {
-				metricsIds = append(metricsIds, types.PerfMetricId{
-					CounterId: info.Key,
-					Instance:  instance,
-				})
+				for _, instance := range metricDef.Instance {
+					metricsIds = append(metricsIds, types.PerfMetricId{
+						CounterId: info.Key,
+						Instance:  instance,
+					})
+				}
 			}
 		}
 	}
-	return createPerfQuerySpec(entity, startTime, endTime, metricsIds)
+	return createPerfQuerySpec(managedObject.Entity, startTime, endTime, metricsIds)
 }
 
 func (v *VspherePerfManager) getMetricsInfo() ([]metricInfo, error) {
@@ -108,7 +109,7 @@ func hasMetricsWithAllInstances(metrics []config.MetricDef) bool {
 		if len(metricDef.Instance) == 0 {
 			return true
 		}
-		return metricDef.Instance[0] == config.AllInstances[0]
+		return metricDef.Instance[0] == config.ALL[0]
 	})
 
 	if metricDefAllInstances != nil {
@@ -147,7 +148,6 @@ func setAllInstancesToMetrics(availableMetrics []types.PerfMetricId, metricInfo 
 }
 
 func getMetricsInfoFromConfig(metricsInfo []metricInfo, metricDef config.MetricDef) []metricInfo {
-
 	metrics := u.Where(metricsInfo, func(metric metricInfo, i int) bool {
 		re := regexp.MustCompile(metricDef.Metric)
 		return re.MatchString(metric.Metric)
@@ -157,4 +157,19 @@ func getMetricsInfoFromConfig(metricsInfo []metricInfo, metricDef config.MetricD
 		return []metricInfo{}
 	}
 	return metrics.([]metricInfo)
+}
+
+func checkEntity(metricDef config.MetricDef, entityName string) bool {
+
+	if len(metricDef.Entities) == 0 || metricDef.Entities[0] == config.ALL[0] {
+		return true
+	}
+
+	for _, entity := range metricDef.Entities {
+		re := regexp.MustCompile(entity)
+		if re.MatchString(entityName) {
+			return true
+		}
+	}
+	return false
 }

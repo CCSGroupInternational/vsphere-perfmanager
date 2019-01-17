@@ -29,14 +29,16 @@ func main() {
 				config.MetricDef{
 					Metric:   "cpu.usage.average",
 					Instance: []string{""},
+					Entities: config.ALL,
 				},
 				config.MetricDef{
 					Metric:   "cpu.usagemhz.average",
-					Instance: config.AllInstances,
+					Instance: config.ALL,
 				},
 				config.MetricDef{
 					Metric:   "net.packets*",
-					//Instance:  config.AllInstances,
+					Entities: []string{"dropbox"},
+					Instance: []string{"vmnic1"},
 				},
 			},
 		},

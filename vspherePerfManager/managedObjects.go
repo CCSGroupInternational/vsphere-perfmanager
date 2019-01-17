@@ -6,6 +6,7 @@ import (
 	"github.com/vmware/govmomi/vim25/mo"
 	"github.com/vmware/govmomi/vim25/methods"
 	"github.com/vmware/govmomi/find"
+	u "github.com/ahl5esoft/golang-underscore"
 )
 
 type managedObject struct {
@@ -109,3 +110,12 @@ func (v *VspherePerfManager) dataCenters() ([]types.ManagedObjectReference, erro
 
 }
 
+func (m *managedObject) getProperty(property string) string {
+	props := u.Where(m.Properties, func(prop types.DynamicProperty, i int) bool {
+		if prop.Name == property {
+			return true
+		}
+		return false
+	})
+	return props.([]types.DynamicProperty)[0].Val.(string)
+}
