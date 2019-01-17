@@ -28,11 +28,11 @@ func main() {
 			config.VMs: {
 				config.MetricDef{
 					Metric:   "cpu.usage.average",
-					Instance: "*",
+					Instance: []string{""},
 				},
 				config.MetricDef{
 					Metric:   "cpu.usagemhz.average",
-					Instance: "",
+					Instance: config.AllInstances,
 				},
 			},
 		},
@@ -40,7 +40,21 @@ func main() {
 
 	vspherePerfManager, err := pm.Init(&vspherePmConfig)
 
-	vspherePerfManager.Vms()
+	vms, err := vspherePerfManager.Vms()
+
+
+	if err != nil {
+		fmt.Println("Error Getting Vms Metrics\n", err)
+	}
+
+	for _, vm := range vms {
+		fmt.Println("VM Name: " + vm.Properties[0].Val.(string))
+		for _, metric := range vm.Metrics {
+			fmt.Println( "Metric Info: " + metric.Info.Group + "." + metric.Info.Counter + "." + metric.Info.Rollup )
+			fmt.Println( "Metric Instance: " + metric.Value.Instance)
+			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
+		}
+	}
 
 }
 

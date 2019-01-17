@@ -19,12 +19,14 @@ type Vcenter struct {
 
 type MetricDef struct {
 	Metric   string
-	Instance string
+	Instance []string
 }
 
 type EntitiesType string
 
 const (
-	VMs  EntitiesType = "VirtualMachines"
-	Hosts EntitiesType = "Hostsystems"
+	VMs  EntitiesType  = "VirtualMachine"
+	Hosts EntitiesType = "HostSystem"
 )
+
+var AllInstances = []string{"*"}

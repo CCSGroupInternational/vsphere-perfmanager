@@ -7,7 +7,6 @@ import (
 	"context"
 	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
 	"github.com/vmware/govmomi/vim25/types"
-	"fmt"
 )
 
 type VspherePerfManager struct {
@@ -49,7 +48,6 @@ func (v *VspherePerfManager) connect(c config.Vcenter) error {
 }
 
 func (v *VspherePerfManager) Vms() ([]managedObject, error) {
-
 	objects, err := v.managedObjects([]string{"VirtualMachine"})
 	if err != nil {
 		return nil, err
@@ -69,20 +67,12 @@ func (v *VspherePerfManager) Vms() ([]managedObject, error) {
 		return nil, err
 	}
 
-	for _, vm := range vms {
-		err := v.query(&vm)
+	for key := range vms {
+		err := v.query(&vms[key])
 
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(vm.Properties[0].Val)
-		if len(vm.Metrics) != 0 {
-			fmt.Println(vm.Metrics[0].Info.Group)
-			fmt.Println(vm.Metrics[0].Info.Counter)
-			fmt.Println(vm.Metrics[0].Info.Rollup)
-			fmt.Println(vm.Metrics[0].Info.Key)
-		}
-
 	}
 	return vms, nil
 }
