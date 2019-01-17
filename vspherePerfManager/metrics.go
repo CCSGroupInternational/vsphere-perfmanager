@@ -62,7 +62,7 @@ func (v *VspherePerfManager) getMetricsFromConfig(entity types.ManagedObjectRefe
 
 		for _, info := range metrics {
 
-			if metricDef.Instance[0] == config.AllInstances[0] {
+			if len(metricDef.Instance) == 0 || metricDef.Instance[0] == config.AllInstances[0] {
 				metricsIds = setAllInstancesToMetrics(availableMetrics[0].MetricId, info, metricsIds)
 				continue
 			}
@@ -74,10 +74,7 @@ func (v *VspherePerfManager) getMetricsFromConfig(entity types.ManagedObjectRefe
 				})
 			}
 		}
-
-
 	}
-
 	return createPerfQuerySpec(entity, startTime, endTime, metricsIds)
 }
 
@@ -108,6 +105,9 @@ func (v *VspherePerfManager) getMetricsInfo() ([]metricInfo, error) {
 
 func hasMetricsWithAllInstances(metrics []config.MetricDef) bool {
 	metricDefAllInstances := u.Where(metrics, func(metricDef config.MetricDef, i int) bool {
+		if len(metricDef.Instance) == 0 {
+			return true
+		}
 		return metricDef.Instance[0] == config.AllInstances[0]
 	})
 

@@ -22,22 +22,25 @@ func (v *VspherePerfManager) query(managedObject *managedObject) error {
 		metrics = v.getAvailablePerfMetrics(managedObject.Entity, startTime, endTime)
 	}
 
-	perfQueryReq := types.QueryPerf{
-		This: *v.client.ServiceContent.PerfManager,
-		QuerySpec: metrics,
+	if len(metrics[0].MetricId) != 0 {
+		perfQueryReq := types.QueryPerf{
+			This: *v.client.ServiceContent.PerfManager,
+			QuerySpec: metrics,
+		}
+
+		perfQueryRes, err := methods.QueryPerf(ctx, v.client.RoundTripper, &perfQueryReq )
+
+		if err != nil {
+			return err
+		}
+
+		if len(perfQueryRes.Returnval) == 0 {
+			return nil
+		}
+
+		v.setMetrics(managedObject, perfQueryRes.Returnval)
 	}
 
-	perfQueryRes, err := methods.QueryPerf(ctx, v.client.RoundTripper, &perfQueryReq )
-
-	if err != nil {
-		return err
-	}
-
-	if len(perfQueryRes.Returnval) == 0 {
-		return nil
-	}
-
-	v.setMetrics(managedObject, perfQueryRes.Returnval)
 	return nil
 }
 

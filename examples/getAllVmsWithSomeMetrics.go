@@ -36,7 +36,7 @@ func main() {
 				},
 				config.MetricDef{
 					Metric:   "net.packets*",
-					Instance:  config.AllInstances,
+					//Instance:  config.AllInstances,
 				},
 			},
 		},
