@@ -48,11 +48,11 @@ func (v *VspherePerfManager) getAvailablePerfMetrics(entity types.ManagedObjectR
 
 func (v *VspherePerfManager) getMetricsFromConfig(managedObject *managedObject, startTime time.Time, endTime time.Time) []types.PerfQuerySpec {
 
-	var availableMetrics []types.PerfQuerySpec
+	//var availableMetrics []types.PerfQuerySpec
 
-	if hasMetricsWithAllInstances(v.config.Metrics[config.EntitiesType(managedObject.Entity.Type)]) {
-		availableMetrics = v.getAvailablePerfMetrics(managedObject.Entity, startTime, endTime)
-	}
+	//if hasMetricsWithAllInstances(v.config.Metrics[config.EntitiesType(managedObject.Entity.Type)]) {
+	availableMetrics := v.getAvailablePerfMetrics(managedObject.Entity, startTime, endTime)
+	//}
 
 	var metricsIds []types.PerfMetricId
 
@@ -61,18 +61,7 @@ func (v *VspherePerfManager) getMetricsFromConfig(managedObject *managedObject, 
 			metrics := getMetricsInfoFromConfig(v.metricsInfo, metricDef)
 
 			for _, info := range metrics {
-
-				if len(metricDef.Instance) == 0 || metricDef.Instance[0] == config.ALL[0] {
-					metricsIds = setAllInstancesToMetrics(availableMetrics[0].MetricId, info, metricsIds)
-					continue
-				}
-
-				for _, instance := range metricDef.Instance {
-					metricsIds = append(metricsIds, types.PerfMetricId{
-						CounterId: info.Key,
-						Instance:  instance,
-					})
-				}
+				metricsIds = setInstancesToMetrics(availableMetrics[0].MetricId, info, metricDef, metricsIds )
 			}
 		}
 	}
@@ -104,47 +93,33 @@ func (v *VspherePerfManager) getMetricsInfo() ([]metricInfo, error) {
 
 }
 
-func hasMetricsWithAllInstances(metrics []config.MetricDef) bool {
-	metricDefAllInstances := u.Where(metrics, func(metricDef config.MetricDef, i int) bool {
-		if len(metricDef.Instance) == 0 {
-			return true
-		}
-		return metricDef.Instance[0] == config.ALL[0]
-	})
+func setInstancesToMetrics(availableMetrics []types.PerfMetricId, metricInfo metricInfo, metricDef config.MetricDef, metricsIds []types.PerfMetricId) []types.PerfMetricId {
 
-	if metricDefAllInstances != nil {
-		return true
-	}
-	return false
-
-}
-
-func createPerfQuerySpec(entity types.ManagedObjectReference, startTime time.Time, endTime time.Time, metricsIds []types.PerfMetricId) []types.PerfQuerySpec {
-	return []types.PerfQuerySpec{{
-		Entity:     entity,
-		StartTime:  &startTime,
-		EndTime:    &endTime,
-		MetricId:   metricsIds,
-		IntervalId: int32(20),
-	}}
-
-}
-
-func setAllInstancesToMetrics(availableMetrics []types.PerfMetricId, metricInfo metricInfo, metricsIds []types.PerfMetricId) []types.PerfMetricId {
 	availableMetricInstances := u.WhereBy(availableMetrics, map[string]interface{}{
 		"CounterId": metricInfo.Key,
 	})
 
 	if availableMetricInstances != nil {
 		for _, metricInstance := range availableMetricInstances.([]types.PerfMetricId) {
-			metricsIds = append(metricsIds, types.PerfMetricId{
-				CounterId: metricInfo.Key,
-				Instance:  metricInstance.Instance,
-			})
+			if isToGetAllInstances(metricDef) {
+				metricsIds = append(metricsIds, setMetricIds( metricInfo.Key, metricInstance.Instance))
+			} else {
+				for _, instance := range metricDef.Instance {
+					re := regexp.MustCompile(instance)
+					if re.MatchString(metricInstance.Instance) {
+						metricsIds = append(metricsIds, setMetricIds( metricInfo.Key, metricInstance.Instance))
+						continue
+					}
+				}
+
+			}
 		}
 	}
-
 	return metricsIds
+}
+
+func isToGetAllInstances(metricDef config.MetricDef) bool {
+	return len(metricDef.Instance) == 0 || metricDef.Instance[0] == config.ALL[0]
 }
 
 func getMetricsInfoFromConfig(metricsInfo []metricInfo, metricDef config.MetricDef) []metricInfo {
@@ -157,6 +132,17 @@ func getMetricsInfoFromConfig(metricsInfo []metricInfo, metricDef config.MetricD
 		return []metricInfo{}
 	}
 	return metrics.([]metricInfo)
+}
+
+func createPerfQuerySpec(entity types.ManagedObjectReference, startTime time.Time, endTime time.Time, metricsIds []types.PerfMetricId) []types.PerfQuerySpec {
+	return []types.PerfQuerySpec{{
+		Entity:     entity,
+		StartTime:  &startTime,
+		EndTime:    &endTime,
+		MetricId:   metricsIds,
+		IntervalId: int32(20),
+	}}
+
 }
 
 func checkEntity(metricDef config.MetricDef, entityName string) bool {
@@ -172,4 +158,13 @@ func checkEntity(metricDef config.MetricDef, entityName string) bool {
 		}
 	}
 	return false
+}
+
+func setMetricIds(counterId int32, instance string) types.PerfMetricId {
+
+	return types.PerfMetricId{
+		CounterId: counterId,
+		Instance:  instance,
+	}
+
 }

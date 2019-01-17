@@ -28,17 +28,16 @@ func main() {
 			config.VMs: {
 				config.MetricDef{
 					Metric:   "cpu.usage.average",
-					Instance: []string{""},
 					Entities: config.ALL,
 				},
 				config.MetricDef{
 					Metric:   "cpu.usagemhz.average",
-					Instance: config.ALL,
+					Instance: []string{"0"},
 				},
 				config.MetricDef{
 					Metric:   "net.packets*",
 					Entities: []string{"dropbox"},
-					Instance: []string{"vmnic1"},
+					Instance: []string{"vmnic\\d"},
 				},
 			},
 		},
