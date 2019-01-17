@@ -53,14 +53,7 @@ func (v *VspherePerfManager) setMetrics(managedObject *managedObject, metrics []
 
 			for _, value := range serie.Value {
 				managedObject.Metrics = append(managedObject.Metrics, Metric{
-					Info: metricInfo{
-						Counter   : info[0].Counter,
-						Group     : info[0].Group,
-						Rollup    : info[0].Rollup,
-						StatsType : info[0].StatsType,
-						UnitInfo  : info[0].UnitInfo,
-						Key       : info[0].Key,
-					},
+					Info: info[0],
 					Value: metricValue{
 						Value: value,
 						Instance: serie.Id.Instance,

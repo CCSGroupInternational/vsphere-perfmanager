@@ -25,8 +25,9 @@ type MetricDef struct {
 type EntitiesType string
 
 const (
-	VMs  EntitiesType  = "VirtualMachine"
-	Hosts EntitiesType = "HostSystem"
+	VMs        EntitiesType = "VirtualMachine"
+	Hosts      EntitiesType = "HostSystem"
+	ALLMetrics              = "*"
 )
 
 var AllInstances = []string{"*"}

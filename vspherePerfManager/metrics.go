@@ -4,11 +4,11 @@ import (
 	"github.com/vmware/govmomi/vim25/types"
 	"github.com/vmware/govmomi/vim25/methods"
 	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
-	"strings"
 	"context"
 	"github.com/vmware/govmomi/vim25/mo"
 	u "github.com/ahl5esoft/golang-underscore"
 	"time"
+	"regexp"
 )
 
 type Metric struct {
@@ -17,9 +17,7 @@ type Metric struct {
 }
 
 type metricInfo struct {
-	Counter   string
-	Group     string
-	Rollup    string
+	Metric    string
 	StatsType string
 	UnitInfo  string
 	Key       int32
@@ -59,39 +57,24 @@ func (v *VspherePerfManager) getMetricsFromConfig(entity types.ManagedObjectRefe
 	var metricsIds []types.PerfMetricId
 
 	for _, metricDef := range v.config.Metrics[config.EntitiesType(entity.Type)] {
-		info := u.WhereBy(v.metricsInfo, map[string]interface{}{
-			"Counter": strings.Split(metricDef.Metric, ".")[1],
-			"Group":   strings.Split(metricDef.Metric, ".")[0],
-			"Rollup":  strings.Split(metricDef.Metric, ".")[2],
-		})
 
-		if info == nil {
-			continue
-		}
+		metrics := getMetricsInfoFromConfig(v.metricsInfo, metricDef)
 
-		if metricDef.Instance[0] == config.AllInstances[0] {
+		for _, info := range metrics {
 
-			availableMetricInstances := u.WhereBy(availableMetrics[0].MetricId, map[string]interface{} {
-				"CounterId": info.([]metricInfo)[0].Key,
-			})
-
-			if availableMetricInstances != nil {
-				for _, metricInstance := range availableMetricInstances.([]types.PerfMetricId) {
-					metricsIds = append(metricsIds, types.PerfMetricId{
-						CounterId: info.([]metricInfo)[0].Key,
-						Instance:  metricInstance.Instance,
-					})
-				}
+			if metricDef.Instance[0] == config.AllInstances[0] {
+				metricsIds = setAllInstancesToMetrics(availableMetrics[0].MetricId, info, metricsIds)
+				continue
 			}
 
-		} else {
 			for _, instance := range metricDef.Instance {
 				metricsIds = append(metricsIds, types.PerfMetricId{
-					CounterId: info.([]metricInfo)[0].Key,
+					CounterId: info.Key,
 					Instance:  instance,
 				})
 			}
 		}
+
 
 	}
 
@@ -112,9 +95,7 @@ func (v *VspherePerfManager) getMetricsInfo() ([]metricInfo, error) {
 
 	for _, metric := range perfmanager.PerfCounter {
 		metrics = append(metrics, metricInfo{
-			Counter   : metric.NameInfo.GetElementDescription().Key,
-			Group     : metric.GroupInfo.GetElementDescription().Key,
-			Rollup    : string(metric.RollupType),
+			Metric   :  metric.GroupInfo.GetElementDescription().Key + "." + metric.NameInfo.GetElementDescription().Key + "." + string(metric.RollupType),
 			StatsType : string(metric.StatsType),
 			UnitInfo  : metric.UnitInfo.GetElementDescription().Key,
 			Key       : metric.Key,
@@ -146,4 +127,34 @@ func createPerfQuerySpec(entity types.ManagedObjectReference, startTime time.Tim
 		IntervalId: int32(20),
 	}}
 
+}
+
+func setAllInstancesToMetrics(availableMetrics []types.PerfMetricId, metricInfo metricInfo, metricsIds []types.PerfMetricId) []types.PerfMetricId {
+	availableMetricInstances := u.WhereBy(availableMetrics, map[string]interface{}{
+		"CounterId": metricInfo.Key,
+	})
+
+	if availableMetricInstances != nil {
+		for _, metricInstance := range availableMetricInstances.([]types.PerfMetricId) {
+			metricsIds = append(metricsIds, types.PerfMetricId{
+				CounterId: metricInfo.Key,
+				Instance:  metricInstance.Instance,
+			})
+		}
+	}
+
+	return metricsIds
+}
+
+func getMetricsInfoFromConfig(metricsInfo []metricInfo, metricDef config.MetricDef) []metricInfo {
+
+	metrics := u.Where(metricsInfo, func(metric metricInfo, i int) bool {
+		re := regexp.MustCompile(metricDef.Metric)
+		return re.MatchString(metric.Metric)
+	})
+
+	if metrics == nil {
+		return []metricInfo{}
+	}
+	return metrics.([]metricInfo)
 }
