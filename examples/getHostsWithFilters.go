@@ -7,6 +7,7 @@ import (
 	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
 	pm "github.com/CCSGroupInternational/vsphere-perfmanager/vspherePerfManager"
 	"time"
+	"github.com/vmware/govmomi/vim25/types"
 )
 
 func main() {
@@ -37,6 +38,10 @@ func main() {
 				},
 			},
 		},
+		Properties: []types.PropertySpec{{
+			Type: string(config.Hosts),
+			PathSet: []string{"parent"},
+		}},
 	}
 
 	vspherePerfManager, err := pm.Init(&vspherePmConfig)
@@ -48,7 +53,8 @@ func main() {
 	}
 
 	for _, host := range hosts {
-		fmt.Println("VM Name: " + host.GetProperty("name").(string))
+		fmt.Println("Host Name: " + host.GetProperty("name").(string))
+		fmt.Println("Cluster ID: " + host.GetProperty("parent").(types.ManagedObjectReference).Value)
 		for _, metric := range host.Metrics {
 			fmt.Println( "Metric : " + metric.Info.Metric )
 			fmt.Println( "Metric Instance: " + metric.Value.Instance)
