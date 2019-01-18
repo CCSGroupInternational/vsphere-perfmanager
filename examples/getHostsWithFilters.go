@@ -49,7 +49,7 @@ func main() {
 	hosts, err := vspherePerfManager.Hosts()
 
 	if err != nil {
-		fmt.Println("Error Getting Vms Metrics\n", err)
+		fmt.Println("Error Getting Hosts Metrics\n", err)
 	}
 
 	for _, host := range hosts {
