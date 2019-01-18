@@ -27,21 +27,25 @@ func main() {
 		QueryInterval: time.Duration(20) * time.Second,
 		Metrics: map[config.EntitiesType][]config.MetricDef{
 			config.VMs: {
-				//config.MetricDef{
-				//	Metric:   "cpu.usage.average",
-				//	Entities: config.ALL,
-				//},
+				config.MetricDef{
+					Metric:   "cpu.usage.average",
+					Entities: config.ALL,
+				},
 				config.MetricDef{
 					Metric:   "cpu.usagemhz.average",
 					Instance: []string{"0"},
 				},
-				//config.MetricDef{
-				//	Metric:   "net.packets*",
-				//	Entities: []string{"dropbox"},
-				//	Instance: []string{"vmnic\\d"},
-				//},
+				config.MetricDef{
+					Metric:   "net.packets*",
+					Entities: []string{"dropbox"},
+					Instance: []string{"vmnic\\d"},
+				},
 			},
 		},
+		Properties: []types.PropertySpec{{
+			Type: string(config.VMs),
+			PathSet: []string{"runtime.host"},
+		}},
 	}
 
 	vspherePerfManager, err := pm.Init(&vspherePmConfig)

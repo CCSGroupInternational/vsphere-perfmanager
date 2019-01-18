@@ -117,5 +117,19 @@ func (m *managedObject) GetProperty(property string) types.AnyType {
 		}
 		return false
 	})
+
+	if props == nil {
+		return nil
+	}
+
 	return props.([]types.DynamicProperty)[0].Val
+}
+
+func getProperties(propertiesFromconfig []types.PropertySpec) []types.PropertySpec {
+
+	properties := []types.PropertySpec{{
+		Type   : "ManagedEntity",
+		PathSet : []string{"name"},
+	}}
+	return append(properties, propertiesFromconfig...)
 }

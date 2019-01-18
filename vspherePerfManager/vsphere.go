@@ -6,7 +6,6 @@ import (
 	"strings"
 	"context"
 	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
-	"github.com/vmware/govmomi/vim25/types"
 )
 
 type VspherePerfManager struct {
@@ -61,15 +60,7 @@ func (v *VspherePerfManager) getMetrics(ObjectType config.EntitiesType) ([]manag
 		return nil, err
 	}
 
-	properties := []types.PropertySpec{{
-		Type   : "ManagedEntity",
-		PathSet : []string{"name"},
-	},{
-		Type    : "VirtualMachine",
-		PathSet : []string{"runtime.host"},
-	},}
-
-	entities, err := v.getManagedObject(objects, properties)
+	entities, err := v.getManagedObject(objects, getProperties(v.config.Properties))
 	if err != nil {
 		return nil, err
 	}

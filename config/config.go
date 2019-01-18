@@ -2,12 +2,14 @@ package config
 
 import (
 	"time"
+	"github.com/vmware/govmomi/vim25/types"
 )
 
 type VspherePerfManagerConfig struct {
 	Vcenter Vcenter
 	QueryInterval time.Duration
 	Metrics map[EntitiesType][]MetricDef
+	Properties []types.PropertySpec
 }
 
 type Vcenter struct {
