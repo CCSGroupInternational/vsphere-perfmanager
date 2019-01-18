@@ -17,8 +17,11 @@ type VspherePerfManager struct {
 func Init(c *config.VspherePerfManagerConfig) (*VspherePerfManager, error) {
 	vspherePerfManager := VspherePerfManager{}
 	err := vspherePerfManager.connect(c.Vcenter)
-	vspherePerfManager.metricsInfo, err = vspherePerfManager.getMetricsInfo()
+	if err != nil {
+		return nil, err
+	}
 	vspherePerfManager.config = c
+	vspherePerfManager.metricsInfo, err = vspherePerfManager.getMetricsInfo()
 	if err != nil {
 		return nil, err
 	}
