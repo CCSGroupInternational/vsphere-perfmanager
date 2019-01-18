@@ -110,12 +110,12 @@ func (v *VspherePerfManager) dataCenters() ([]types.ManagedObjectReference, erro
 
 }
 
-func (m *managedObject) getProperty(property string) string {
+func (m *managedObject) GetProperty(property string) types.AnyType {
 	props := u.Where(m.Properties, func(prop types.DynamicProperty, i int) bool {
 		if prop.Name == property {
 			return true
 		}
 		return false
 	})
-	return props.([]types.DynamicProperty)[0].Val.(string)
+	return props.([]types.DynamicProperty)[0].Val
 }

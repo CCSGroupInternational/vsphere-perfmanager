@@ -57,7 +57,7 @@ func (v *VspherePerfManager) getMetricsFromConfig(managedObject *managedObject, 
 	var metricsIds []types.PerfMetricId
 
 	for _, metricDef := range v.config.Metrics[config.EntitiesType(managedObject.Entity.Type)] {
-		if checkEntity(metricDef, managedObject.getProperty("name")) {
+		if checkEntity(metricDef, managedObject.GetProperty("name").(string)) {
 			metrics := getMetricsInfoFromConfig(v.metricsInfo, metricDef)
 
 			for _, info := range metrics {

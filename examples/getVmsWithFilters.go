@@ -7,6 +7,7 @@ import (
 	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
 	pm "github.com/CCSGroupInternational/vsphere-perfmanager/vspherePerfManager"
 	"time"
+	"github.com/vmware/govmomi/vim25/types"
 )
 
 func main() {
@@ -26,19 +27,19 @@ func main() {
 		QueryInterval: time.Duration(20) * time.Second,
 		Metrics: map[config.EntitiesType][]config.MetricDef{
 			config.VMs: {
-				config.MetricDef{
-					Metric:   "cpu.usage.average",
-					Entities: config.ALL,
-				},
+				//config.MetricDef{
+				//	Metric:   "cpu.usage.average",
+				//	Entities: config.ALL,
+				//},
 				config.MetricDef{
 					Metric:   "cpu.usagemhz.average",
 					Instance: []string{"0"},
 				},
-				config.MetricDef{
-					Metric:   "net.packets*",
-					Entities: []string{"dropbox"},
-					Instance: []string{"vmnic\\d"},
-				},
+				//config.MetricDef{
+				//	Metric:   "net.packets*",
+				//	Entities: []string{"dropbox"},
+				//	Instance: []string{"vmnic\\d"},
+				//},
 			},
 		},
 	}
@@ -53,7 +54,8 @@ func main() {
 	}
 
 	for _, vm := range vms {
-		fmt.Println("VM Name: " + vm.Properties[0].Val.(string))
+		fmt.Println("VM Name: " + vm.GetProperty("name").(string))
+		fmt.Println("Host ID :" + vm.GetProperty("runtime.host").(types.ManagedObjectReference).Value)
 		for _, metric := range vm.Metrics {
 			fmt.Println( "Metric : " + metric.Info.Metric )
 			fmt.Println( "Metric Instance: " + metric.Value.Instance)

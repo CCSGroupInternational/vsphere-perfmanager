@@ -36,7 +36,7 @@ func main() {
 	}
 
 	for _, host := range hosts {
-		fmt.Println("Host Name: " + host.Properties[0].Val.(string))
+		fmt.Println("VM Name: " + host.GetProperty("name").(string))
 		for _, metric := range host.Metrics {
 			fmt.Println( "Metric : " + metric.Info.Metric )
 			fmt.Println( "Metric Instance: " + metric.Value.Instance)

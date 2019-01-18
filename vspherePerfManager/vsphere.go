@@ -64,7 +64,10 @@ func (v *VspherePerfManager) getMetrics(ObjectType config.EntitiesType) ([]manag
 	properties := []types.PropertySpec{{
 		Type   : "ManagedEntity",
 		PathSet : []string{"name"},
-	}}
+	},{
+		Type    : "VirtualMachine",
+		PathSet : []string{"runtime.host"},
+	},}
 
 	entities, err := v.getManagedObject(objects, properties)
 	if err != nil {
