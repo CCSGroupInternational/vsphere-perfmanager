@@ -48,38 +48,15 @@ func (v *VspherePerfManager) connect(c config.Vcenter) error {
 }
 
 func (v *VspherePerfManager) Vms() ([]managedObject, error) {
-	objects, err := v.managedObjects([]string{"VirtualMachine"})
-	if err != nil {
-		return nil, err
-	}
-
-	properties := []types.PropertySpec{{
-		Type   : "ManagedEntity",
-		PathSet : []string{"name"},
-	}}
-
-	vms, err := v.getManagedObject(objects, properties)
-	if err != nil {
-		return nil, err
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	for key := range vms {
-		err := v.query(&vms[key])
-
-		if err != nil {
-			return nil, err
-		}
-	}
-	return vms, nil
+	return v.getMetrics(config.VMs)
 }
 
-func (v *VspherePerfManager) Hosts()  ([]managedObject, error) {
+func (v *VspherePerfManager) Hosts() ([]managedObject, error) {
+	return v.getMetrics(config.Hosts)
+}
 
-	objects, err := v.managedObjects([]string{"HostSystem"})
+func (v *VspherePerfManager) getMetrics(ObjectType config.EntitiesType) ([]managedObject, error) {
+	objects, err := v.managedObjects([]string{string(ObjectType)})
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +66,7 @@ func (v *VspherePerfManager) Hosts()  ([]managedObject, error) {
 		PathSet : []string{"name"},
 	}}
 
-	hosts, err := v.getManagedObject(objects, properties)
+	entities, err := v.getManagedObject(objects, properties)
 	if err != nil {
 		return nil, err
 	}
@@ -98,12 +75,12 @@ func (v *VspherePerfManager) Hosts()  ([]managedObject, error) {
 		return nil, err
 	}
 
-	for key := range hosts {
-		err := v.query(&hosts[key])
+	for key := range entities {
+		err := v.query(&entities[key])
 
 		if err != nil {
 			return nil, err
 		}
 	}
-	return hosts, nil
+	return entities, nil
 }
