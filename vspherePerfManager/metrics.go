@@ -3,7 +3,6 @@ package vspherePerfManager
 import (
 	"github.com/vmware/govmomi/vim25/types"
 	"github.com/vmware/govmomi/vim25/methods"
-	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
 	"context"
 	"github.com/vmware/govmomi/vim25/mo"
 	u "github.com/ahl5esoft/golang-underscore"
@@ -51,7 +50,7 @@ func (v *VspherePerfManager) getMetricsFromConfig(managedObject ManagedObject, s
 
 	var metricsIds []types.PerfMetricId
 
-	for _, metricDef := range v.config.Metrics[config.PmSupportedEntities(managedObject.Entity.Type)] {
+	for _, metricDef := range v.Config.Metrics[PmSupportedEntities(managedObject.Entity.Type)] {
 		if checkEntity(metricDef, v.GetProperty(managedObject, "name").(string)) {
 			metrics := getMetricsInfoFromConfig(v.metricsInfo, metricDef)
 
@@ -88,7 +87,7 @@ func (v *VspherePerfManager) getMetricsInfo() ([]metricInfo, error) {
 
 }
 
-func setInstancesToMetrics(availableMetrics []types.PerfMetricId, metricInfo metricInfo, metricDef config.MetricDef, metricsIds []types.PerfMetricId) []types.PerfMetricId {
+func setInstancesToMetrics(availableMetrics []types.PerfMetricId, metricInfo metricInfo, metricDef MetricDef, metricsIds []types.PerfMetricId) []types.PerfMetricId {
 
 	availableMetricInstances := u.WhereBy(availableMetrics, map[string]interface{}{
 		"CounterId": metricInfo.Key,
@@ -113,11 +112,11 @@ func setInstancesToMetrics(availableMetrics []types.PerfMetricId, metricInfo met
 	return metricsIds
 }
 
-func isToGetAllInstances(metricDef config.MetricDef) bool {
-	return len(metricDef.Instance) == 0 || metricDef.Instance[0] == config.ALL[0]
+func isToGetAllInstances(metricDef MetricDef) bool {
+	return len(metricDef.Instance) == 0 || metricDef.Instance[0] == ALL[0]
 }
 
-func getMetricsInfoFromConfig(metricsInfo []metricInfo, metricDef config.MetricDef) []metricInfo {
+func getMetricsInfoFromConfig(metricsInfo []metricInfo, metricDef MetricDef) []metricInfo {
 	metrics := u.Where(metricsInfo, func(metric metricInfo, i int) bool {
 		re := regexp.MustCompile(metricDef.Metric)
 		return re.MatchString(metric.Metric)
@@ -140,9 +139,9 @@ func createPerfQuerySpec(entity types.ManagedObjectReference, startTime time.Tim
 
 }
 
-func checkEntity(metricDef config.MetricDef, entityName string) bool {
+func checkEntity(metricDef MetricDef, entityName string) bool {
 
-	if len(metricDef.Entities) == 0 || metricDef.Entities[0] == config.ALL[0] {
+	if len(metricDef.Entities) == 0 || metricDef.Entities[0] == ALL[0] {
 		return true
 	}
 

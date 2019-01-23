@@ -5,33 +5,29 @@ import (
 	"net/url"
 	"strings"
 	"context"
-	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
 )
 
 type VspherePerfManager struct {
+	Config       Config
 	client       *govmomi.Client
 	metricsInfo  []metricInfo
-	config       *config.VspherePerfManagerConfig
 	objects      map[string]map[string]ManagedObject
 }
 
-func Init(c *config.VspherePerfManagerConfig) (*VspherePerfManager, error) {
-	vspherePerfManager := VspherePerfManager{}
-	err := vspherePerfManager.connect(c.Vcenter)
+func (v *VspherePerfManager) Init() (error) {
+	err := v.connect(v.Config.Vcenter)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	vspherePerfManager.config = c
-	vspherePerfManager.metricsInfo, err = vspherePerfManager.getMetricsInfo()
+	v.metricsInfo, err = v.getMetricsInfo()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = vspherePerfManager.managedObjects()
-	return &vspherePerfManager, err
+	return v.managedObjects()
 }
 
-func (v *VspherePerfManager) connect(c config.Vcenter) error {
+func (v *VspherePerfManager) connect(c Vcenter) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -52,7 +48,7 @@ func (v *VspherePerfManager) connect(c config.Vcenter) error {
 	return nil
 }
 
-func (v *VspherePerfManager) Get(entityType config.PmSupportedEntities) (map[string]ManagedObject, error) {
+func (v *VspherePerfManager) Get(entityType PmSupportedEntities) (map[string]ManagedObject, error) {
 	return v.fetchMetrics(string(entityType))
 }
 

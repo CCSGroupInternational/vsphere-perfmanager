@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"os"
-	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
 	pm "github.com/CCSGroupInternational/vsphere-perfmanager/vspherePerfManager"
 	"time"
-	"github.com/vmware/govmomi/vim25/types"
 )
 
 func main() {
@@ -17,49 +15,55 @@ func main() {
 		fmt.Println("Error to convert VSPHERE_INSECURE env var to bool type\n", err)
 	}
 
-	vspherePmConfig := config.VspherePerfManagerConfig{
-		Vcenter: config.Vcenter {
-			Username : os.Getenv("VSPHERE_USER"),
-			Password : os.Getenv("VSPHERE_PASSWORD"),
-			Host     : os.Getenv("VSPHERE_HOST"),
-			Insecure : insecure,
-		},
-		QueryInterval: time.Duration(20) * time.Second,
-		Metrics: map[config.PmSupportedEntities][]config.MetricDef{
-			config.VMs: {
-				config.MetricDef{
-					Metric:   "cpu.usage.average",
-					Entities: config.ALL,
-				},
-				config.MetricDef{
-					Metric:   "cpu.usagemhz.average",
-					Instance: []string{"0"},
-				},
-				config.MetricDef{
-					Metric:   "net.packets*",
-					Entities: []string{"dropbox"},
-					Instance: []string{"vmnic\\d"},
+	vspherePm := pm.VspherePerfManager{
+		Config: pm.Config {
+			Vcenter: pm.Vcenter {
+				Username : os.Getenv("VSPHERE_USER"),
+				Password : os.Getenv("VSPHERE_PASSWORD"),
+				Host     : os.Getenv("VSPHERE_HOST"),
+				Insecure : insecure,
+			},
+			QueryInterval: time.Duration(20) * time.Second,
+			Data: map[string][]string{
+				string(pm.VMs): {"runtime.host"},
+				string(pm.Hosts): {},
+			},
+			Metrics: map[pm.PmSupportedEntities][]pm.MetricDef{
+				pm.VMs: {
+					pm.MetricDef{
+						Metric:   "cpu.usage.average",
+						Entities: pm.ALL,
+					},
+					pm.MetricDef{
+						Metric:   "cpu.usagemhz.average",
+						Instance: []string{"0"},
+					},
+					pm.MetricDef{
+						Metric:   "net.packets*",
+						Entities: []string{"dropbox"},
+						Instance: []string{"vmnic\\d"},
+					},
 				},
 			},
+
 		},
-		Properties: []types.PropertySpec{{
-			Type: string(config.VMs),
-			PathSet: []string{"runtime.host"},
-		}},
 	}
 
-	vspherePerfManager, err := pm.Init(&vspherePmConfig)
+	err = vspherePm.Init()
 
-	vms, err := vspherePerfManager.Vms()
+	if err != nil {
+		fmt.Println("Error on Initializing Vsphere Performance Manager\n", err)
+	}
 
+	vms, err := vspherePm.Get(pm.VMs)
 
 	if err != nil {
 		fmt.Println("Error Getting Vms Metrics\n", err)
 	}
 
 	for _, vm := range vms {
-		fmt.Println("VM Name: " + vm.GetProperty("name").(string))
-		fmt.Println("Host ID :" + vm.GetProperty("runtime.host").(types.ManagedObjectReference).Value)
+		fmt.Println("VM Name: " + vspherePm.GetProperty(vm, "name").(string))
+		fmt.Println("Host ID :" + vspherePm.GetProperty(vspherePm.GetProperty(vm,"runtime.host").(pm.ManagedObject), "name").(string))
 		for _, metric := range vm.Metrics {
 			fmt.Println( "Metric : " + metric.Info.Metric )
 			fmt.Println( "Metric Instance: " + metric.Value.Instance)

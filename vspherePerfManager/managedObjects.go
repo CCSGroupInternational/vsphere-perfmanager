@@ -33,7 +33,7 @@ func (v *VspherePerfManager) managedObjects() error {
 	}
 	var objectSet []types.ObjectSpec
 
-	keys := reflect.ValueOf(v.config.Data).MapKeys()
+	keys := reflect.ValueOf(v.Config.Data).MapKeys()
 	objectTypes := make([]string, len(keys))
 	for i := 0; i < len(keys); i++ {
 		objectTypes[i] = keys[i].String()
@@ -71,7 +71,7 @@ func (v *VspherePerfManager) retrieveProperties(objectSet []types.ObjectSpec, ob
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	propReq := types.RetrieveProperties{SpecSet: []types.PropertyFilterSpec{{ObjectSet: objectSet, PropSet: setProperties(v.config.Data)}}}
+	propReq := types.RetrieveProperties{SpecSet: []types.PropertyFilterSpec{{ObjectSet: objectSet, PropSet: setProperties(v.Config.Data)}}}
 	propRes, err := v.client.PropertyCollector().RetrieveProperties(ctx, propReq)
 
 	if err != nil {

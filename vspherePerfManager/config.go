@@ -1,10 +1,10 @@
-package config
+package vspherePerfManager
 
 import (
 	"time"
 )
 
-type VspherePerfManagerConfig struct {
+type Config struct {
 	Vcenter Vcenter
 	QueryInterval time.Duration
 	Metrics map[PmSupportedEntities][]MetricDef
