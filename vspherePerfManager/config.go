@@ -29,7 +29,7 @@ type PmSupportedEntities string
 const (
 	VMs      PmSupportedEntities = "VirtualMachine"
 	Hosts    PmSupportedEntities = "HostSystem"
-	Clusters PmSupportedEntities = "ClusterComputeResource"
+	Clusters  = "ClusterComputeResource"
 )
 
 var ALL = []string{"*"}

@@ -63,7 +63,7 @@ func main() {
 
 	for _, vm := range vms {
 		fmt.Println("VM Name: " + vspherePm.GetProperty(vm, "name").(string))
-		fmt.Println("Host ID :" + vspherePm.GetProperty(vspherePm.GetProperty(vm,"runtime.host").(pm.ManagedObject), "name").(string))
+		fmt.Println("Host Name :" + vspherePm.GetProperty(vspherePm.GetProperty(vm,"runtime.host").(pm.ManagedObject), "name").(string))
 		for _, metric := range vm.Metrics {
 			fmt.Println( "Metric : " + metric.Info.Metric )
 			fmt.Println( "Metric Instance: " + metric.Value.Instance)
