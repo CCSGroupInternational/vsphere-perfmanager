@@ -12,7 +12,7 @@ type VspherePerfManager struct {
 	client       *govmomi.Client
 	metricsInfo  []metricInfo
 	config       *config.VspherePerfManagerConfig
-	objects      map[config.PmSupportedEntities]map[string]ManagedObject
+	objects      map[string]map[string]ManagedObject
 }
 
 func Init(c *config.VspherePerfManagerConfig) (*VspherePerfManager, error) {
@@ -30,8 +30,6 @@ func Init(c *config.VspherePerfManagerConfig) (*VspherePerfManager, error) {
 	err = vspherePerfManager.managedObjects()
 	return &vspherePerfManager, err
 }
-
-
 
 func (v *VspherePerfManager) connect(c config.Vcenter) error {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -55,10 +53,10 @@ func (v *VspherePerfManager) connect(c config.Vcenter) error {
 }
 
 func (v *VspherePerfManager) Get(entityType config.PmSupportedEntities) (map[string]ManagedObject, error) {
-	return v.getMetrics(entityType)
+	return v.fetchMetrics(string(entityType))
 }
 
-func (v *VspherePerfManager) getMetrics(ObjectType config.PmSupportedEntities) (map[string]ManagedObject, error) {
+func (v *VspherePerfManager) fetchMetrics(ObjectType string) (map[string]ManagedObject, error) {
 	var err error
 
 	entities := v.objects[ObjectType]

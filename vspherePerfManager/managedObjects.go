@@ -7,7 +7,6 @@ import (
 	"github.com/vmware/govmomi/vim25/methods"
 	"github.com/vmware/govmomi/find"
 	u "github.com/ahl5esoft/golang-underscore"
-	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
 	"reflect"
 )
 
@@ -79,13 +78,13 @@ func (v *VspherePerfManager) retrieveProperties(objectSet []types.ObjectSpec, ob
 		return err
 	}
 
-	v.objects = make(map[config.PmSupportedEntities]map[string]ManagedObject)
+	v.objects = make(map[string]map[string]ManagedObject)
 	for _, objectType := range objectTypes {
-		v.objects[config.PmSupportedEntities(objectType)] = make(map[string]ManagedObject)
+		v.objects[objectType] = make(map[string]ManagedObject)
 	}
 
 	for _, objectContent := range propRes.Returnval {
-		v.objects[config.PmSupportedEntities(objectContent.Obj.Type)][objectContent.Obj.Value] = ManagedObject{
+		v.objects[objectContent.Obj.Type][objectContent.Obj.Value] = ManagedObject{
 			Entity: objectContent.Obj,
 			Properties: objectContent.PropSet,
 		}
@@ -130,7 +129,7 @@ func (v *VspherePerfManager) GetProperty(o ManagedObject, property string) types
 
 	switch prop := props.([]types.DynamicProperty)[0].Val.(type) {
 		case types.ManagedObjectReference:
-			return v.objects[config.PmSupportedEntities(prop.Type)][prop.Value]
+			return v.objects[prop.Type][prop.Value]
 		default:
 			return prop
 	}
