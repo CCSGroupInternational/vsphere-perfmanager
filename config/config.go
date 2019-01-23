@@ -2,14 +2,13 @@ package config
 
 import (
 	"time"
-	"github.com/vmware/govmomi/vim25/types"
 )
 
 type VspherePerfManagerConfig struct {
 	Vcenter Vcenter
 	QueryInterval time.Duration
-	Metrics map[EntitiesType][]MetricDef
-	Properties []types.PropertySpec
+	Metrics map[PmSupportedEntities][]MetricDef
+	Data map[string][]string
 }
 
 type Vcenter struct {
@@ -25,11 +24,12 @@ type MetricDef struct {
 	Entities []string
 }
 
-type EntitiesType string
+type PmSupportedEntities string
 
 const (
-	VMs        EntitiesType = "VirtualMachine"
-	Hosts      EntitiesType = "HostSystem"
+	VMs      PmSupportedEntities = "VirtualMachine"
+	Hosts    PmSupportedEntities = "HostSystem"
+	Clusters PmSupportedEntities = "ClusterComputeResource"
 )
 
 var ALL = []string{"*"}

@@ -7,30 +7,37 @@ import (
 	"github.com/vmware/govmomi/vim25/methods"
 	"github.com/vmware/govmomi/find"
 	u "github.com/ahl5esoft/golang-underscore"
+	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
+	"reflect"
 )
 
-type managedObject struct {
+type ManagedObject struct {
 	Entity types.ManagedObjectReference
 	Properties []types.DynamicProperty
 	Metrics []Metric
 }
 
-func (v *VspherePerfManager) managedObjects(objectTypes []string) ([]types.ManagedObjectReference, error) {
+func (v *VspherePerfManager) managedObjects() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	var viewManager mo.ViewManager
 	err := v.client.RetrieveOne(ctx, *v.client.ServiceContent.ViewManager, nil, &viewManager)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	var mors []types.ManagedObjectReference
 
 	datacenters, err := v.dataCenters()
 
 	if err != nil {
-		return nil, err
+		return err
+	}
+	var objectSet []types.ObjectSpec
+
+	keys := reflect.ValueOf(v.config.Data).MapKeys()
+	objectTypes := make([]string, len(keys))
+	for i := 0; i < len(keys); i++ {
+		objectTypes[i] = keys[i].String()
 	}
 
 	for _, datacenter := range datacenters {
@@ -42,50 +49,49 @@ func (v *VspherePerfManager) managedObjects(objectTypes []string) ([]types.Manag
 		}
 
 		res, err := methods.CreateContainerView(ctx, v.client.RoundTripper, &req)
-
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		var containerView mo.ContainerView
 		err = v.client.RetrieveOne(ctx, res.Returnval, nil, &containerView)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		mors = append(mors, containerView.View...)
+
+		for _, mor := range containerView.View {
+			objectSet = append(objectSet, types.ObjectSpec{Obj: mor, Skip: types.NewBool(false)})
+		}
 	}
 
-	return mors, nil
+	return v.retrieveProperties(objectSet, objectTypes)
 
 }
 
-func (v *VspherePerfManager) getManagedObject(mors []types.ManagedObjectReference, propSets []types.PropertySpec) ([]managedObject, error) {
-	var objectSet []types.ObjectSpec
-
+func (v *VspherePerfManager) retrieveProperties(objectSet []types.ObjectSpec, objectTypes []string) (error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	for _, mor := range mors {
-		objectSet = append(objectSet, types.ObjectSpec{Obj: mor, Skip: types.NewBool(false)})
-	}
-
-	//retrieve properties
-	propReq := types.RetrieveProperties{SpecSet: []types.PropertyFilterSpec{{ObjectSet: objectSet, PropSet: propSets}}}
+	propReq := types.RetrieveProperties{SpecSet: []types.PropertyFilterSpec{{ObjectSet: objectSet, PropSet: setProperties(v.config.Data)}}}
 	propRes, err := v.client.PropertyCollector().RetrieveProperties(ctx, propReq)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var managedObjects []managedObject
+	v.objects = make(map[config.PmSupportedEntities]map[string]ManagedObject)
+	for _, objectType := range objectTypes {
+		v.objects[config.PmSupportedEntities(objectType)] = make(map[string]ManagedObject)
+	}
 
 	for _, objectContent := range propRes.Returnval {
-		managedObjects = append(managedObjects, managedObject{
+		v.objects[config.PmSupportedEntities(objectContent.Obj.Type)][objectContent.Obj.Value] = ManagedObject{
 			Entity: objectContent.Obj,
 			Properties: objectContent.PropSet,
-		})
+		}
 	}
-	return managedObjects, nil
+
+	return nil
 }
 
 func (v *VspherePerfManager) dataCenters() ([]types.ManagedObjectReference, error) {
@@ -110,8 +116,8 @@ func (v *VspherePerfManager) dataCenters() ([]types.ManagedObjectReference, erro
 
 }
 
-func (m *managedObject) GetProperty(property string) types.AnyType {
-	props := u.Where(m.Properties, func(prop types.DynamicProperty, i int) bool {
+func (v *VspherePerfManager) GetProperty(o ManagedObject, property string) types.AnyType {
+	props := u.Where(o.Properties, func(prop types.DynamicProperty, i int) bool {
 		if prop.Name == property {
 			return true
 		}
@@ -119,17 +125,29 @@ func (m *managedObject) GetProperty(property string) types.AnyType {
 	})
 
 	if props == nil {
-		return nil
+		return "Property doesn't exist"
 	}
 
-	return props.([]types.DynamicProperty)[0].Val
+	switch prop := props.([]types.DynamicProperty)[0].Val.(type) {
+		case types.ManagedObjectReference:
+			return v.objects[config.PmSupportedEntities(prop.Type)][prop.Value]
+		default:
+			return prop
+	}
 }
 
-func getProperties(propertiesFromconfig []types.PropertySpec) []types.PropertySpec {
-
-	properties := []types.PropertySpec{{
+func setProperties(propertiesFromconfig map[string][]string) []types.PropertySpec {
+	props := []types.PropertySpec{{
 		Type   : "ManagedEntity",
 		PathSet : []string{"name"},
-	}}
-	return append(properties, propertiesFromconfig...)
+		},
+	}
+
+	for entity, properties := range propertiesFromconfig {
+		props = append(props, types.PropertySpec{
+			Type: entity,
+			PathSet:properties,
+		})
+	}
+	return props
 }

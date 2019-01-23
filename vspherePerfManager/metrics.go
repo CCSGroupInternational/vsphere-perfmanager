@@ -46,18 +46,13 @@ func (v *VspherePerfManager) getAvailablePerfMetrics(entity types.ManagedObjectR
 	return createPerfQuerySpec(entity, startTime, endTime, perfRes.Returnval)
 }
 
-func (v *VspherePerfManager) getMetricsFromConfig(managedObject *managedObject, startTime time.Time, endTime time.Time) []types.PerfQuerySpec {
-
-	//var availableMetrics []types.PerfQuerySpec
-
-	//if hasMetricsWithAllInstances(v.config.Metrics[config.EntitiesType(managedObject.Entity.Type)]) {
+func (v *VspherePerfManager) getMetricsFromConfig(managedObject ManagedObject, startTime time.Time, endTime time.Time) []types.PerfQuerySpec {
 	availableMetrics := v.getAvailablePerfMetrics(managedObject.Entity, startTime, endTime)
-	//}
 
 	var metricsIds []types.PerfMetricId
 
-	for _, metricDef := range v.config.Metrics[config.EntitiesType(managedObject.Entity.Type)] {
-		if checkEntity(metricDef, managedObject.GetProperty("name").(string)) {
+	for _, metricDef := range v.config.Metrics[config.PmSupportedEntities(managedObject.Entity.Type)] {
+		if checkEntity(metricDef, v.GetProperty(managedObject, "name").(string)) {
 			metrics := getMetricsInfoFromConfig(v.metricsInfo, metricDef)
 
 			for _, info := range metrics {

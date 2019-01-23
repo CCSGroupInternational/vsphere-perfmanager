@@ -12,6 +12,7 @@ type VspherePerfManager struct {
 	client       *govmomi.Client
 	metricsInfo  []metricInfo
 	config       *config.VspherePerfManagerConfig
+	objects      map[config.PmSupportedEntities]map[string]ManagedObject
 }
 
 func Init(c *config.VspherePerfManagerConfig) (*VspherePerfManager, error) {
@@ -25,8 +26,12 @@ func Init(c *config.VspherePerfManagerConfig) (*VspherePerfManager, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	err = vspherePerfManager.managedObjects()
 	return &vspherePerfManager, err
 }
+
+
 
 func (v *VspherePerfManager) connect(c config.Vcenter) error {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -49,32 +54,18 @@ func (v *VspherePerfManager) connect(c config.Vcenter) error {
 	return nil
 }
 
-func (v *VspherePerfManager) Vms() ([]managedObject, error) {
-	return v.getMetrics(config.VMs)
+func (v *VspherePerfManager) Get(entityType config.PmSupportedEntities) (map[string]ManagedObject, error) {
+	return v.getMetrics(entityType)
 }
 
-func (v *VspherePerfManager) Hosts() ([]managedObject, error) {
-	return v.getMetrics(config.Hosts)
-}
+func (v *VspherePerfManager) getMetrics(ObjectType config.PmSupportedEntities) (map[string]ManagedObject, error) {
+	var err error
 
-func (v *VspherePerfManager) getMetrics(ObjectType config.EntitiesType) ([]managedObject, error) {
-	objects, err := v.managedObjects([]string{string(ObjectType)})
-	if err != nil {
-		return nil, err
-	}
+	entities := v.objects[ObjectType]
 
-	entities, err := v.getManagedObject(objects, getProperties(v.config.Properties))
-	if err != nil {
-		return nil, err
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	for key := range entities {
-		err := v.query(&entities[key])
-
+	for key, vm := range entities {
+		entities[key], err = v.query(vm)
+		//
 		if err != nil {
 			return nil, err
 		}

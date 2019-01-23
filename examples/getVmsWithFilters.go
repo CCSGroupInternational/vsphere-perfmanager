@@ -25,7 +25,7 @@ func main() {
 			Insecure : insecure,
 		},
 		QueryInterval: time.Duration(20) * time.Second,
-		Metrics: map[config.EntitiesType][]config.MetricDef{
+		Metrics: map[config.PmSupportedEntities][]config.MetricDef{
 			config.VMs: {
 				config.MetricDef{
 					Metric:   "cpu.usage.average",

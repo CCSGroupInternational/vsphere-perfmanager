@@ -7,7 +7,6 @@ import (
 	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
 	pm "github.com/CCSGroupInternational/vsphere-perfmanager/vspherePerfManager"
 	"time"
-	"github.com/vmware/govmomi/vim25/types"
 )
 
 func main() {
@@ -25,24 +24,40 @@ func main() {
 			Insecure : insecure,
 		},
 		QueryInterval: time.Duration(20) * time.Second,
+		Data: map[string][]string{
+			string(config.VMs): {"runtime.host"},
+			string(config.Hosts): {},
+		},
+		Metrics: map[config.PmSupportedEntities][]config.MetricDef{
+			config.VMs: {
+				config.MetricDef{
+					Metric:   "net.packets*",
+					Entities: []string{"dropbox"},
+					Instance: []string{"vmnic\\d"},
+				},
+			},
+		},
+
 	}
 
 	vspherePerfManager, err := pm.Init(&vspherePmConfig)
 
-	vms, err := vspherePerfManager.Vms()
+	vms, err := vspherePerfManager.Get(config.VMs)
 
 	if err != nil {
 		fmt.Println("Error Getting Vms Metrics\n", err)
 	}
 
 	for _, vm := range vms {
-		fmt.Println("VM Name: " + vm.GetProperty("name").(string))
-		fmt.Println("Host ID :" + vm.GetProperty("runtime.host").(types.ManagedObjectReference).Value)
-		for _, metric := range vm.Metrics {
-			fmt.Println( "Metric Info: " + metric.Info.Metric )
-			fmt.Println( "Metric Instance: " + metric.Value.Instance)
-			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
-		}
+		//fmt.Println("VM Name: " + vm.GetProperty("name").(string))
+		host := vspherePerfManager.GetProperty(vm, "runtime.host").(pm.ManagedObject)
+		fmt.Println(vspherePerfManager.GetProperty(host, "name").(string))
+		//fmt.Println("Host ID :" + vspherePerfManager.GetProperty("runtime.host", *vspherePerfManager).(pm.managedObject).GetProperty("name", *vspherePerfManager).(string))
+		//for _, metric := range vm.Metrics {
+		//	fmt.Println( "Metric Info: " + metric.Info.Metric )
+		//	fmt.Println( "Metric Instance: " + metric.Value.Instance)
+		//	fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
+		//}
 	}
 
 }

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (v *VspherePerfManager) query(managedObject *managedObject) error {
+func (v *VspherePerfManager) query(managedObject ManagedObject) (ManagedObject, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -31,20 +31,20 @@ func (v *VspherePerfManager) query(managedObject *managedObject) error {
 		perfQueryRes, err := methods.QueryPerf(ctx, v.client.RoundTripper, &perfQueryReq )
 
 		if err != nil {
-			return err
+			return managedObject, err
 		}
 
 		if len(perfQueryRes.Returnval) == 0 {
-			return nil
+			return managedObject, err
 		}
 
-		v.setMetrics(managedObject, perfQueryRes.Returnval)
+		v.setMetrics(&managedObject, perfQueryRes.Returnval)
 	}
 
-	return nil
+	return managedObject, nil
 }
 
-func (v *VspherePerfManager) setMetrics(managedObject *managedObject, metrics []types.BasePerfEntityMetricBase) {
+func (v *VspherePerfManager) setMetrics(managedObject *ManagedObject, metrics []types.BasePerfEntityMetricBase) {
 	for _, base := range metrics {
 		pem := base.(*types.PerfEntityMetric)
 		for _, baseSerie := range pem.Value {
