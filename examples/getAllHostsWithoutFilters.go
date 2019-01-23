@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"os"
-	"github.com/CCSGroupInternational/vsphere-perfmanager/config"
 	pm "github.com/CCSGroupInternational/vsphere-perfmanager/vspherePerfManager"
 	"time"
 )
@@ -16,28 +15,38 @@ func main() {
 		fmt.Println("Error to convert VSPHERE_INSECURE env var to bool type\n", err)
 	}
 
-	vspherePmConfig := config.VspherePerfManagerConfig{
-		Vcenter: config.Vcenter {
-			Username : os.Getenv("VSPHERE_USER"),
-			Password : os.Getenv("VSPHERE_PASSWORD"),
-			Host     : os.Getenv("VSPHERE_HOST"),
-			Insecure : insecure,
+	vspherePm := pm.VspherePerfManager{
+		Config: pm.Config {
+			Vcenter: pm.Vcenter {
+				Username : os.Getenv("VSPHERE_USER"),
+				Password : os.Getenv("VSPHERE_PASSWORD"),
+				Host     : os.Getenv("VSPHERE_HOST"),
+				Insecure : insecure,
+			},
+			QueryInterval: time.Duration(20) * time.Second,
+			Data: map[string][]string{
+				string(pm.Hosts): {},
+			},
 		},
-		QueryInterval: time.Duration(20) * time.Second,
 	}
 
-	vspherePerfManager, err := pm.Init(&vspherePmConfig)
 
-	hosts, err := vspherePerfManager.Hosts()
+	err = vspherePm.Init()
 
+	if err != nil {
+		fmt.Println("Error on Initializing Vsphere Performance Manager\n", err)
+	}
+
+	vms, err := vspherePm.Get(pm.Hosts)
 
 	if err != nil {
 		fmt.Println("Error Getting Hosts Metrics\n", err)
 	}
 
-	for _, host := range hosts {
-		fmt.Println("VM Name: " + host.GetProperty("name").(string))
-		for _, metric := range host.Metrics {
+
+	for _, vm := range vms {
+		fmt.Println("VM Name: " + vspherePm.GetProperty(vm, "name").(string))
+		for _, metric := range vm.Metrics {
 			fmt.Println( "Metric : " + metric.Info.Metric )
 			fmt.Println( "Metric Instance: " + metric.Value.Instance)
 			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
