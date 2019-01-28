@@ -1,14 +1,10 @@
 package vspherePerfManager
 
-import (
-	"time"
-)
-
 type Config struct {
 	Vcenter Vcenter
-	QueryInterval time.Duration
+	Samples int32
 	Metrics map[PmSupportedEntities][]MetricDef
-	Data map[string][]string
+	Data    map[string][]string
 }
 
 type Vcenter struct {
@@ -19,7 +15,7 @@ type Vcenter struct {
 }
 
 type MetricDef struct {
-	Metric   string
+	Metric   []string
 	Instance []string
 	Entities []string
 }
@@ -27,9 +23,11 @@ type MetricDef struct {
 type PmSupportedEntities string
 
 const (
-	VMs      PmSupportedEntities = "VirtualMachine"
-	Hosts    PmSupportedEntities = "HostSystem"
-	Clusters  = "ClusterComputeResource"
+	VMs           PmSupportedEntities = "VirtualMachine"
+	Hosts         PmSupportedEntities = "HostSystem"
+	ResourcePools PmSupportedEntities = "ResourcePool"
+	Datastores    PmSupportedEntities = "Datastore"
+	Clusters                          = "ClusterComputeResource"
 )
 
 var ALL = []string{"*"}

@@ -84,9 +84,11 @@ func (v *VspherePerfManager) retrieveProperties(objectSet []types.ObjectSpec, ob
 	}
 
 	for _, objectContent := range propRes.Returnval {
-		v.objects[objectContent.Obj.Type][objectContent.Obj.Value] = ManagedObject{
-			Entity: objectContent.Obj,
-			Properties: objectContent.PropSet,
+		if _, ok := v.objects[objectContent.Obj.Type]; ok {
+			v.objects[objectContent.Obj.Type][objectContent.Obj.Value] = ManagedObject{
+				Entity: objectContent.Obj,
+				Properties: objectContent.PropSet,
+			}
 		}
 	}
 

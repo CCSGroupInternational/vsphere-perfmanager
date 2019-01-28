@@ -5,12 +5,15 @@ import (
 	"net/url"
 	"strings"
 	"context"
+	"fmt"
+	u "github.com/ahl5esoft/golang-underscore"
+	"regexp"
 )
 
 type VspherePerfManager struct {
 	Config       Config
 	client       *govmomi.Client
-	metricsInfo  []metricInfo
+	metricsInfo  map[int32]metricInfo
 	objects      map[string]map[string]ManagedObject
 }
 
@@ -48,21 +51,48 @@ func (v *VspherePerfManager) connect(c Vcenter) error {
 	return nil
 }
 
-func (v *VspherePerfManager) Get(entityType PmSupportedEntities) (map[string]ManagedObject, error) {
-	return v.fetchMetrics(string(entityType))
+func (v *VspherePerfManager) Get(entityType PmSupportedEntities) []ManagedObject {
+	return v.fetch(string(entityType))
 }
 
-func (v *VspherePerfManager) fetchMetrics(ObjectType string) (map[string]ManagedObject, error) {
-	var err error
+func (v *VspherePerfManager) fetch(ObjectType string) []ManagedObject {
+	var ok bool
+	var entities []ManagedObject
 
-	entities := v.objects[ObjectType]
+	regexs := u.Pluck(v.Config.Metrics[PmSupportedEntities(ObjectType)], "Entities")
 
-	for key, vm := range entities {
-		entities[key], err = v.query(vm)
-		//
-		if err != nil {
-			return nil, err
+	for _, entity := range v.objects[ObjectType] {
+
+		if regexs != nil {
+			// Check If entity is to query
+			ok = u.Any(regexs.([][]string), func(regex []string, _ int) bool {
+				if len(regex) == 0 {
+					return true
+				}
+				for _, pattern := range regex {
+					if pattern == ALL[0] {
+						return true
+					}
+					re := regexp.MustCompile(pattern)
+					if re.MatchString(v.GetProperty(entity, "name").(string)) {
+						return true
+					}
+				}
+				return false
+			})
+
+		} else {
+			ok = true
+		}
+
+		if ok {
+			result, err := v.query(entity)
+			if err != nil {
+				fmt.Errorf("The following error occorred when query the entity "+ v.GetProperty(entity, "name").(string) + ": %g ", err)
+			} else {
+				entities = append(entities, result)
+			}
 		}
 	}
-	return entities, nil
+	return entities
 }

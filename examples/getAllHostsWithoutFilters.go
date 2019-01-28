@@ -23,7 +23,7 @@ func main() {
 				Host     : os.Getenv("VSPHERE_HOST"),
 				Insecure : insecure,
 			},
-			QueryInterval: time.Duration(20) * time.Second,
+			Samples: time.Duration(20) * time.Second,
 			Data: map[string][]string{
 				string(pm.Hosts): {"parent"},
 				string(pm.Clusters): {},

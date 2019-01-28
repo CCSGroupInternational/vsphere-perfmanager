@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"os"
 	"fmt"
-	"time"
 	pm "github.com/CCSGroupInternational/vsphere-perfmanager/vspherePerfManager"
 )
 
@@ -23,14 +22,37 @@ func main() {
 				Host:     os.Getenv("VSPHERE_HOST"),
 				Insecure: insecure,
 			},
-			QueryInterval: time.Duration(20) * time.Second,
+			Samples: 6,
 			Data: map[string][]string{
 				string(pm.VMs):      {"runtime.host"},
 				string(pm.Hosts):    {"parent"},
 				pm.Clusters: {},
+				string(pm.ResourcePools): {"parent", "vm"},
+				string(pm.Datastores): {"summary.url"},
+			},
+			Metrics: map[pm.PmSupportedEntities][]pm.MetricDef{
+				pm.Datastores: {
+					pm.MetricDef{
+						Entities: []string{"VMWareCP03"},
+						Metric: []string{"disk.unshared.latest"},
+					},
+				},
+				pm.Hosts: {
+					pm.MetricDef{
+						Metric: []string{"net.packets*"},
+					},
+				},
+				pm.VMs: {
+					pm.MetricDef{
+						Metric:   []string{"net.packets*"},
+						Entities: []string{"openshift01"},
+						Instance: []string{"vmnic\\d"},
+					},
+				},
 			},
 		},
 	}
+
 
 	err = vspherePm.Init()
 
@@ -38,47 +60,74 @@ func main() {
 		fmt.Println("Error on Initializing Vsphere Performance Manager\n", err)
 	}
 
-	//vms, err := vspherePm.Get(pm.VMs)
-	//
-	//if err != nil {
-	//	fmt.Println("Error Getting Vms Metrics\n", err)
-	//}
-	//
-	//for _, vm := range vms {
-	//	fmt.Println("VM Name: " + vspherePm.GetProperty(vm, "name").(string))
-	//	host := vspherePm.GetProperty(vm, "runtime.host").(pm.ManagedObject)
-	//	fmt.Println("Host Name :" + vspherePm.GetProperty(host, "name").(string))
-	//	fmt.Println("Cluster Name :" + vspherePm.GetProperty(vspherePm.GetProperty(host, "parent").(pm.ManagedObject), "name").(string))
-	//	for _, metric := range vm.Metrics {
-	//		fmt.Println("Metric : " + metric.Info.Metric)
-	//		fmt.Println("Metric Instance: " + metric.Value.Instance)
-	//		fmt.Println("Result: " + strconv.FormatInt(metric.Value.Value, 10))
-	//	}
-	//}
+	vms := vspherePm.Get(pm.VMs)
+
+	for _, vm := range vms {
+		fmt.Println("VM Name: " + vspherePm.GetProperty(vm, "name").(string))
+		host := vspherePm.GetProperty(vm, "runtime.host").(pm.ManagedObject)
+		fmt.Println("Host Name :" + vspherePm.GetProperty(host, "name").(string))
+		fmt.Println("Cluster Name :" + vspherePm.GetProperty(vspherePm.GetProperty(host, "parent").(pm.ManagedObject), "name").(string))
+		for _, metric := range vm.Metrics {
+			fmt.Println("Metric : " + metric.Info.Metric)
+			fmt.Println("Metric Instance: " + metric.Value.Instance)
+			fmt.Println("Result: " + strconv.FormatInt(metric.Value.Value, 10))
+		}
+	}
 
 
-	//hosts, err := vspherePm.Get(pm.Hosts)
-	//
-	//if err != nil {
-	//	fmt.Println("Error Getting Hosts Metrics\n", err)
-	//}
-	//
-	//for _, host := range hosts {
-	//	fmt.Println("Host Name: " + vspherePm.GetProperty(host, "name").(string))
-	//	fmt.Println("Cluster Name: " + vspherePm.GetProperty(vspherePm.GetProperty(host, "parent").(pm.ManagedObject),"name").(string))
-	//	for _, metric := range host.Metrics {
-	//		fmt.Println( "Metric : " + metric.Info.Metric )
-	//		fmt.Println( "Metric Instance: " + metric.Value.Instance)
-	//		fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
-	//	}
-	//}
-
-	clusters, err := vspherePm.Get(pm.Clusters)
+	hosts := vspherePm.Get(pm.Hosts)
 
 	if err != nil {
 		fmt.Println("Error Getting Hosts Metrics\n", err)
 	}
 
+	for _, host := range hosts {
+		fmt.Println("Host Name: " + vspherePm.GetProperty(host, "name").(string))
+		fmt.Println("Cluster Name: " + vspherePm.GetProperty(vspherePm.GetProperty(host, "parent").(pm.ManagedObject),"name").(string))
+		for _, metric := range host.Metrics {
+			fmt.Println( "Metric : " + metric.Info.Metric )
+			fmt.Println( "Metric Instance: " + metric.Value.Instance)
+			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
+		}
+	}
+
+	dataStores := vspherePm.Get(pm.Datastores)
+
+	if err != nil {
+		fmt.Println("Error Getting Datastores Metrics\n", err)
+	}
+
+	for _, dataStore := range dataStores {
+		fmt.Println("Datastore Name: " + vspherePm.GetProperty(dataStore, "name").(string))
+		fmt.Println("Summary Url: " + vspherePm.GetProperty(dataStore, "summary.url").(string) )
+		for _, metric := range dataStore.Metrics {
+			fmt.Println( "Metric : " + metric.Info.Metric )
+			fmt.Println( "Metric Instance: " + metric.Value.Instance)
+			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
+		}
+	}
+
+	resourcePools := vspherePm.Get(pm.ResourcePools)
+
+	if err != nil {
+		fmt.Println("Error Getting ResourcePool Metrics\n", err)
+	}
+
+	for _, resourcePool := range resourcePools {
+		fmt.Println("Resource Pool: " + vspherePm.GetProperty(resourcePool, "name").(string))
+		fmt.Println("Cluster Name: " + vspherePm.GetProperty(vspherePm.GetProperty(resourcePool, "parent").(pm.ManagedObject),"name").(string))
+		for _, metric := range resourcePool.Metrics {
+			fmt.Println( "Metric : " + metric.Info.Metric )
+			fmt.Println( "Metric Instance: " + metric.Value.Instance)
+			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
+		}
+	}
+
+	clusters := vspherePm.Get(pm.Clusters)
+
+	if err != nil {
+		fmt.Println("Error Getting ResourcePool Metrics\n", err)
+	}
 
 	for _, cluster := range clusters {
 		fmt.Println("Cluster Name: " + vspherePm.GetProperty(cluster, "name").(string))
@@ -88,5 +137,4 @@ func main() {
 			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
 		}
 	}
-
 }
