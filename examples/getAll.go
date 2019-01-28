@@ -115,13 +115,19 @@ func main() {
 
 	for _, resourcePool := range resourcePools {
 		fmt.Println("Resource Pool: " + vspherePm.GetProperty(resourcePool, "name").(string))
-		fmt.Println("Cluster Name: " + vspherePm.GetProperty(vspherePm.GetProperty(resourcePool, "parent").(pm.ManagedObject),"name").(string))
+		switch parentType := vspherePm.GetProperty(resourcePool, "parent").(pm.ManagedObject).Entity.Type; parentType {
+		case string(pm.Clusters):
+			fmt.Println("Cluster Name: " + vspherePm.GetProperty(vspherePm.GetProperty(resourcePool, "parent").(pm.ManagedObject), "name").(string))
+		case string(pm.ResourcePools):
+			fmt.Println("Cluster Name: " + vspherePm.GetProperty(vspherePm.GetProperty(vspherePm.GetProperty(resourcePool, "parent").(pm.ManagedObject),"parent").(pm.ManagedObject), "name").(string))
+		}
 		for _, metric := range resourcePool.Metrics {
 			fmt.Println( "Metric : " + metric.Info.Metric )
 			fmt.Println( "Metric Instance: " + metric.Value.Instance)
 			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
 		}
 	}
+
 
 	clusters := vspherePm.Get(pm.Clusters)
 
