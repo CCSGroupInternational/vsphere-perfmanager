@@ -93,16 +93,22 @@ func main() {
 
 	dataStores := vspherePm.Get(pm.Datastores)
 
-	if err != nil {
-		fmt.Println("Error Getting Datastores Metrics\n", err)
-	}
-
 	for _, dataStore := range dataStores {
 		fmt.Println("Datastore Name: " + vspherePm.GetProperty(dataStore, "name").(string))
 		fmt.Println("Summary Url: " + vspherePm.GetProperty(dataStore, "summary.url").(string) )
 		for _, metric := range dataStore.Metrics {
 			fmt.Println( "Metric : " + metric.Info.Metric )
-			fmt.Println( "Metric Instance: " + metric.Value.Instance)
+			var instance string
+			if len(metric.Value.Instance) != 0 {
+				if _, err := strconv.Atoi(metric.Value.Instance); err == nil {
+					instance = vspherePm.GetProperty(vspherePm.GetObject(string(pm.VMs), "vm-" + metric.Value.Instance), "name").(string)
+				} else {
+					instance = metric.Value.Instance
+				}
+			} else {
+				instance = metric.Value.Instance
+			}
+			fmt.Println("Metric Instance: " + instance)
 			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
 		}
 	}
@@ -127,7 +133,6 @@ func main() {
 			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
 		}
 	}
-
 
 	clusters := vspherePm.Get(pm.Clusters)
 

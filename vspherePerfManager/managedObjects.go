@@ -152,3 +152,7 @@ func setProperties(propertiesFromconfig map[string][]string) []types.PropertySpe
 	}
 	return props
 }
+
+func (v *VspherePerfManager) GetObject(entityType string, objectId string) ManagedObject {
+	return v.objects[entityType][objectId]
+}
