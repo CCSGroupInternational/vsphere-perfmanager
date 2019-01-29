@@ -27,7 +27,7 @@ const (
 	Hosts         PmSupportedEntities = "HostSystem"
 	ResourcePools PmSupportedEntities = "ResourcePool"
 	Datastores    PmSupportedEntities = "Datastore"
-	Clusters                          = "ClusterComputeResource"
+	Clusters      PmSupportedEntities = "ClusterComputeResource"
 )
 
 var ALL = []string{"*"}

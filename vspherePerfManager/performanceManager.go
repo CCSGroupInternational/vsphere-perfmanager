@@ -14,12 +14,12 @@ func (v *VspherePerfManager) query(managedObject ManagedObject) (ManagedObject, 
 	defer cancel()
 
 	summary, err := v.ProviderSummary(managedObject.Entity)
-	if summary.RefreshRate == -1 {
-		summary.RefreshRate = 300
-	}
-
 	if err != nil {
 		return managedObject, err
+	}
+
+	if summary.RefreshRate == -1 {
+		summary.RefreshRate = 300
 	}
 
 	startTime, err := getStartTime(v.Config.Samples, summary.RefreshRate, v.client )

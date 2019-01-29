@@ -26,7 +26,7 @@ func main() {
 			Data: map[string][]string{
 				string(pm.VMs):      {"runtime.host"},
 				string(pm.Hosts):    {"parent"},
-				pm.Clusters: {},
+				string(pm.Clusters): {},
 				string(pm.ResourcePools): {"parent", "vm"},
 				string(pm.Datastores): {"summary.url"},
 			},
@@ -45,7 +45,6 @@ func main() {
 				pm.VMs: {
 					pm.MetricDef{
 						Metric:   []string{"net.packets*"},
-						Entities: []string{"openshift01"},
 						Instance: []string{"vmnic\\d"},
 					},
 				},
