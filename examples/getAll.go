@@ -29,7 +29,8 @@ func main() {
 				string(pm.Clusters): {},
 				string(pm.ResourcePools): {"parent", "vm"},
 				string(pm.Datastores): {"summary.url"},
-				string(pm.Vapp): {""},
+				string(pm.Vapp): {},
+				string(pm.Datacenter): {},
 			},
 			Metrics: map[pm.PmSupportedEntities][]pm.MetricDef{
 				pm.Datastores: {
@@ -167,6 +168,17 @@ func main() {
 			fmt.Println( "Metric : " + metric.Info.Metric )
 			fmt.Println( "Metric Instance: " + metric.Value.Instance)
 			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
+		}
+	}
+
+	datacenters := vspherePm.Get(pm.Datacenter)
+
+	for _, vm := range datacenters {
+		fmt.Println("Datacenter Name: " + vspherePm.GetProperty(vm, "name").(string))
+		for _, metric := range vm.Metrics {
+			fmt.Println("Metric : " + metric.Info.Metric)
+			fmt.Println("Metric Instance: " + metric.Value.Instance)
+			fmt.Println("Result: " + strconv.FormatInt(metric.Value.Value, 10))
 		}
 	}
 }

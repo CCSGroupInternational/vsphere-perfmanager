@@ -29,6 +29,7 @@ const (
 	Datastores    PmSupportedEntities = "Datastore"
 	Clusters      PmSupportedEntities = "ClusterComputeResource"
 	Vapp          PmSupportedEntities = "VirtualApp"
+	Datacenter    PmSupportedEntities = "Datacenter"
 )
 
 var ALL = []string{"*"}

@@ -61,10 +61,13 @@ func (v *VspherePerfManager) managedObjects() error {
 		for _, mor := range containerView.View {
 			objectSet = append(objectSet, types.ObjectSpec{Obj: mor, Skip: types.NewBool(false)})
 		}
+
+		if _, ok := v.Config.Data[string(Datacenter)]; ok {
+			objectSet = append(objectSet, types.ObjectSpec{Obj: datacenter, Skip: types.NewBool(false)})
+		}
 	}
 
 	return v.retrieveProperties(objectSet, objectTypes)
-
 }
 
 func (v *VspherePerfManager) retrieveProperties(objectSet []types.ObjectSpec, objectTypes []string) (error) {
