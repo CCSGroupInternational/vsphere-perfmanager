@@ -62,7 +62,7 @@ func (v *VspherePerfManager) managedObjects() error {
 			objectSet = append(objectSet, types.ObjectSpec{Obj: mor, Skip: types.NewBool(false)})
 		}
 
-		if _, ok := v.Config.Data[string(Datacenter)]; ok {
+		if _, ok := v.Config.Data[string(Datacenters)]; ok {
 			objectSet = append(objectSet, types.ObjectSpec{Obj: datacenter, Skip: types.NewBool(false)})
 		}
 	}

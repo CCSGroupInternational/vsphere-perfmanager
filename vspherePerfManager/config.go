@@ -23,13 +23,15 @@ type MetricDef struct {
 type PmSupportedEntities string
 
 const (
-	VMs           PmSupportedEntities = "VirtualMachine"
-	Hosts         PmSupportedEntities = "HostSystem"
-	ResourcePools PmSupportedEntities = "ResourcePool"
-	Datastores    PmSupportedEntities = "Datastore"
-	Clusters      PmSupportedEntities = "ClusterComputeResource"
-	Vapp          PmSupportedEntities = "VirtualApp"
-	Datacenter    PmSupportedEntities = "Datacenter"
+	VMs               PmSupportedEntities = "VirtualMachine"
+	Hosts             PmSupportedEntities = "HostSystem"
+	ResourcePools     PmSupportedEntities = "ResourcePool"
+	Datastores        PmSupportedEntities = "Datastore"
+	Clusters          PmSupportedEntities = "ClusterComputeResource"
+	Vapps             PmSupportedEntities = "VirtualApp"
+	Datacenters       PmSupportedEntities = "Datacenter"
+	Folders                               = "Folder"
+	DatastoreClusters                     = "StoragePod"
 )
 
 var ALL = []string{"*"}

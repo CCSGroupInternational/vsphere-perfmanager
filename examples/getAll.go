@@ -24,18 +24,20 @@ func main() {
 			},
 			Samples: 6,
 			Data: map[string][]string{
-				string(pm.VMs):      {"runtime.host"},
-				string(pm.Hosts):    {"parent"},
-				string(pm.Clusters): {},
-				string(pm.ResourcePools): {"parent", "vm"},
-				string(pm.Datastores): {"summary.url"},
-				string(pm.Vapp): {},
-				string(pm.Datacenter): {},
+				string(pm.VMs):               {"runtime.host"},
+				string(pm.Hosts):             {"parent"},
+				string(pm.Clusters):          {},
+				string(pm.ResourcePools):     {"parent", "vm"},
+				string(pm.Datastores):        {"summary.url", "parent"},
+				string(pm.Vapps):             {},
+				string(pm.Datacenters):       {},
+				string(pm.Folders):           {"parent"},
+				string(pm.DatastoreClusters): {"parent"},
 			},
 			Metrics: map[pm.PmSupportedEntities][]pm.MetricDef{
 				pm.Datastores: {
 					pm.MetricDef{
-						Entities: []string{"VMWareCP03"},
+						Entities: []string{"datastore1"},
 						Metric: []string{"disk.unshared.latest"},
 					},
 				},
@@ -95,7 +97,30 @@ func main() {
 	dataStores := vspherePm.Get(pm.Datastores)
 
 	for _, dataStore := range dataStores {
+		var datastoreCluster, datacenter pm.ManagedObject
+		flag := false
+		parentObject := vspherePm.GetProperty(dataStore, "parent").(pm.ManagedObject)
+		for {
+			switch parentType := parentObject.Entity.Type; parentType {
+			case string(pm.DatastoreClusters):
+				datastoreCluster = parentObject
+				parentObject = vspherePm.GetProperty(parentObject, "parent").(pm.ManagedObject)
+			case string(pm.Folders):
+				parentObject = vspherePm.GetProperty(parentObject, "parent").(pm.ManagedObject)
+			case string(pm.Datacenters):
+				datacenter = parentObject
+				flag = true
+			}
+
+			if flag {
+				break
+			}
+		}
 		fmt.Println("Datastore Name: " + vspherePm.GetProperty(dataStore, "name").(string))
+		if len(datastoreCluster.Entity.Value) != 0 {
+			fmt.Println("Datastore Cluster: " + vspherePm.GetProperty(datastoreCluster, "name").(string))
+		}
+		fmt.Println("Datacenter: " + vspherePm.GetProperty(datacenter, "name").(string))
 		fmt.Println("Summary Url: " + vspherePm.GetProperty(dataStore, "summary.url").(string) )
 		for _, metric := range dataStore.Metrics {
 			fmt.Println( "Metric : " + metric.Info.Metric )
@@ -150,14 +175,14 @@ func main() {
 		}
 	}
 
-	vapps := vspherePm.Get(pm.Vapp)
+	vapps := vspherePm.Get(pm.Vapps)
 
 	if err != nil {
 		fmt.Println("Error Getting Vapps Metrics\n", err)
 	}
 
 	for _, vapp := range vapps {
-		fmt.Println("Vapp Name: " + vspherePm.GetProperty(vapp, "name").(string))
+		fmt.Println("Vapps Name: " + vspherePm.GetProperty(vapp, "name").(string))
 		switch parentType := vspherePm.GetProperty(vapp, "parent").(pm.ManagedObject).Entity.Type; parentType {
 			case string(pm.ResourcePools):
 				resourcePool := vspherePm.GetProperty(vapp, "parent").(pm.ManagedObject)
@@ -171,10 +196,10 @@ func main() {
 		}
 	}
 
-	datacenters := vspherePm.Get(pm.Datacenter)
+	datacenters := vspherePm.Get(pm.Datacenters)
 
 	for _, vm := range datacenters {
-		fmt.Println("Datacenter Name: " + vspherePm.GetProperty(vm, "name").(string))
+		fmt.Println("Datacenters Name: " + vspherePm.GetProperty(vm, "name").(string))
 		for _, metric := range vm.Metrics {
 			fmt.Println("Metric : " + metric.Info.Metric)
 			fmt.Println("Metric Instance: " + metric.Value.Instance)
