@@ -73,7 +73,7 @@ func (v *VspherePerfManager) fetch(ObjectType string) []ManagedObject {
 					if pattern == ALL[0] {
 						return true
 					}
-					re := regexp.MustCompile(pattern)
+					re := regexp.MustCompile("(?i)"+pattern)
 					if re.MatchString(v.GetProperty(entity, "name").(string)) {
 						return true
 					}

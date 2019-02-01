@@ -77,7 +77,7 @@ func (v *VspherePerfManager) filterWithConfig(metrics []types.PerfMetricId, enti
 				if pattern == ALL[0] {
 					return true
 				}
-				re := regexp.MustCompile(pattern)
+				re := regexp.MustCompile("(?i)"+pattern)
 				if re.MatchString(v.metricsInfo[metric.CounterId].Metric) {
 					return true
 				}
@@ -94,7 +94,7 @@ func (v *VspherePerfManager) filterWithConfig(metrics []types.PerfMetricId, enti
 					if pattern == ALL[0] {
 						return true
 					}
-					re := regexp.MustCompile(pattern)
+					re := regexp.MustCompile("(?i)"+pattern)
 					if re.MatchString(metric.Instance) {
 						return true
 					}
