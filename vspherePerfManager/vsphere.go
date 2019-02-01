@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	u "github.com/ahl5esoft/golang-underscore"
-	"regexp"
 )
 
 type VspherePerfManager struct {
@@ -66,19 +65,7 @@ func (v *VspherePerfManager) fetch(ObjectType string) []ManagedObject {
 		if regexs != nil {
 			// Check If entity is to query
 			ok = u.Any(regexs.([][]string), func(regex []string, _ int) bool {
-				if len(regex) == 0 {
-					return true
-				}
-				for _, pattern := range regex {
-					if pattern == ALL[0] {
-						return true
-					}
-					re := regexp.MustCompile("(?i)"+pattern)
-					if re.MatchString(v.GetProperty(entity, "name").(string)) {
-						return true
-					}
-				}
-				return false
+				return isMatch(v.GetProperty(entity, "name").(string), regex)
 			})
 
 		} else {

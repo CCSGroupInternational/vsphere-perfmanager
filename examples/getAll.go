@@ -48,8 +48,13 @@ func main() {
 				},
 				pm.VMs: {
 					pm.MetricDef{
-						Metrics:   []string{"net.packets*"},
+						Metrics:   []string{"net.packets.*"},
 						Instances: []string{"vmnic\\d"},
+						Entities:  []string{"openshift"},
+					},
+					pm.MetricDef{
+						Metrics:   []string{"disk.*", "mem.*"},
+						//Entities:  []string{"dropbox"},
 					},
 				},
 			},

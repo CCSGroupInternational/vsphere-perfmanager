@@ -69,42 +69,8 @@ func (v *VspherePerfManager) filterWithConfig(metrics []types.PerfMetricId, enti
 
 	for _, metric := range metrics {
 
-		ok := u.Any(v.Config.Metrics[PmSupportedEntities(entity.Entity.Type)], func(metricDef MetricDef, _ int) bool {
-			if len(metricDef.Metrics) == 0 {
-				return true
-			}
-			for _, pattern := range metricDef.Metrics {
-				if pattern == ALL[0] {
-					return true
-				}
-				re := regexp.MustCompile("(?i)"+pattern)
-				if re.MatchString(v.metricsInfo[metric.CounterId].Metric) {
-					return true
-				}
-			}
-			return false
-		})
-
-		if ok {
-			ok = u.Any(v.Config.Metrics[PmSupportedEntities(entity.Entity.Type)], func(metricDef MetricDef, _ int) bool {
-				if len(metricDef.Instances) == 0 {
-					return true
-				}
-				for _, pattern := range metricDef.Instances {
-					if pattern == ALL[0] {
-						return true
-					}
-					re := regexp.MustCompile("(?i)"+pattern)
-					if re.MatchString(metric.Instance) {
-						return true
-					}
-				}
-				return false
-			})
-
-			if ok {
-				filteredMetrics = append(filteredMetrics, metric)
-			}
+		if v.isMetricDefMatch(entity, metric) {
+			filteredMetrics = append(filteredMetrics, metric)
 		}
 
 	}
@@ -145,4 +111,28 @@ func (v *VspherePerfManager) getMetricsInfo() (map[int32]metricInfo, error) {
 
 	return metrics, nil
 
+}
+
+func (v *VspherePerfManager) isMetricDefMatch(entity ManagedObject, metric types.PerfMetricId) bool {
+	return u.Any(v.Config.Metrics[PmSupportedEntities(entity.Entity.Type)], func(metricDef MetricDef, _ int) bool {
+		return isMatch(v.GetProperty(entity, "name").(string), metricDef.Entities) &&
+			      isMatch(v.metricsInfo[metric.CounterId].Metric, metricDef.Metrics) &&
+					isMatch(metric.Instance, metricDef.Instances)
+	})
+}
+
+func isMatch(value string, patterns []string) bool {
+	if len(patterns) == 0 {
+		return true
+	}
+	for _, pattern := range patterns {
+		if pattern == ALL[0] {
+			return true
+		}
+		re := regexp.MustCompile("(?i)"+pattern)
+		if re.MatchString(value) {
+			return true
+		}
+	}
+	return false
 }
