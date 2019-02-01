@@ -38,18 +38,18 @@ func main() {
 				pm.Datastores: {
 					pm.MetricDef{
 						Entities: []string{"datastore1"},
-						Metric: []string{"disk.unshared.latest"},
+						Metrics:  []string{"disk.unshared.latest"},
 					},
 				},
 				pm.Hosts: {
 					pm.MetricDef{
-						Metric: []string{"net.packets*"},
+						Metrics: []string{"net.packets*"},
 					},
 				},
 				pm.VMs: {
 					pm.MetricDef{
-						Metric:   []string{"net.packets*"},
-						Instance: []string{"vmnic\\d"},
+						Metrics:   []string{"net.packets*"},
+						Instances: []string{"vmnic\\d"},
 					},
 				},
 			},
@@ -71,8 +71,8 @@ func main() {
 		fmt.Println("Host Name :" + vspherePm.GetProperty(host, "name").(string))
 		fmt.Println("Cluster Name :" + vspherePm.GetProperty(vspherePm.GetProperty(host, "parent").(pm.ManagedObject), "name").(string))
 		for _, metric := range vm.Metrics {
-			fmt.Println("Metric : " + metric.Info.Metric)
-			fmt.Println("Metric Instance: " + metric.Value.Instance)
+			fmt.Println("Metrics : " + metric.Info.Metric)
+			fmt.Println("Metrics Instances: " + metric.Value.Instance)
 			fmt.Println("Result: " + strconv.FormatInt(metric.Value.Value, 10))
 		}
 	}
@@ -88,8 +88,8 @@ func main() {
 		fmt.Println("Host Name: " + vspherePm.GetProperty(host, "name").(string))
 		fmt.Println("Cluster Name: " + vspherePm.GetProperty(vspherePm.GetProperty(host, "parent").(pm.ManagedObject),"name").(string))
 		for _, metric := range host.Metrics {
-			fmt.Println( "Metric : " + metric.Info.Metric )
-			fmt.Println( "Metric Instance: " + metric.Value.Instance)
+			fmt.Println( "Metrics : " + metric.Info.Metric )
+			fmt.Println( "Metrics Instances: " + metric.Value.Instance)
 			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
 		}
 	}
@@ -123,7 +123,7 @@ func main() {
 		fmt.Println("Datacenter: " + vspherePm.GetProperty(datacenter, "name").(string))
 		fmt.Println("Summary Url: " + vspherePm.GetProperty(dataStore, "summary.url").(string) )
 		for _, metric := range dataStore.Metrics {
-			fmt.Println( "Metric : " + metric.Info.Metric )
+			fmt.Println( "Metrics : " + metric.Info.Metric )
 			var instance string
 			if len(metric.Value.Instance) != 0 {
 				if _, err := strconv.Atoi(metric.Value.Instance); err == nil {
@@ -134,7 +134,7 @@ func main() {
 			} else {
 				instance = metric.Value.Instance
 			}
-			fmt.Println("Metric Instance: " + instance)
+			fmt.Println("Metrics Instances: " + instance)
 			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
 		}
 	}
@@ -154,8 +154,8 @@ func main() {
 			fmt.Println("Cluster Name: " + vspherePm.GetProperty(vspherePm.GetProperty(vspherePm.GetProperty(resourcePool, "parent").(pm.ManagedObject),"parent").(pm.ManagedObject), "name").(string))
 		}
 		for _, metric := range resourcePool.Metrics {
-			fmt.Println( "Metric : " + metric.Info.Metric )
-			fmt.Println( "Metric Instance: " + metric.Value.Instance)
+			fmt.Println( "Metrics : " + metric.Info.Metric )
+			fmt.Println( "Metrics Instances: " + metric.Value.Instance)
 			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
 		}
 	}
@@ -169,8 +169,8 @@ func main() {
 	for _, cluster := range clusters {
 		fmt.Println("Cluster Name: " + vspherePm.GetProperty(cluster, "name").(string))
 		for _, metric := range cluster.Metrics {
-			fmt.Println( "Metric : " + metric.Info.Metric )
-			fmt.Println( "Metric Instance: " + metric.Value.Instance)
+			fmt.Println( "Metrics : " + metric.Info.Metric )
+			fmt.Println( "Metrics Instances: " + metric.Value.Instance)
 			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
 		}
 	}
@@ -190,8 +190,8 @@ func main() {
 				fmt.Println("Cluster Name: " + vspherePm.GetProperty(vspherePm.GetProperty(resourcePool, "parent").(pm.ManagedObject), "name").(string))
 		}
 		for _, metric := range vapp.Metrics {
-			fmt.Println( "Metric : " + metric.Info.Metric )
-			fmt.Println( "Metric Instance: " + metric.Value.Instance)
+			fmt.Println( "Metrics : " + metric.Info.Metric )
+			fmt.Println( "Metrics Instances: " + metric.Value.Instance)
 			fmt.Println( "Result: " + strconv.FormatInt(metric.Value.Value, 10) )
 		}
 	}
@@ -201,8 +201,8 @@ func main() {
 	for _, vm := range datacenters {
 		fmt.Println("Datacenters Name: " + vspherePm.GetProperty(vm, "name").(string))
 		for _, metric := range vm.Metrics {
-			fmt.Println("Metric : " + metric.Info.Metric)
-			fmt.Println("Metric Instance: " + metric.Value.Instance)
+			fmt.Println("Metrics : " + metric.Info.Metric)
+			fmt.Println("Metrics Instances: " + metric.Value.Instance)
 			fmt.Println("Result: " + strconv.FormatInt(metric.Value.Value, 10))
 		}
 	}

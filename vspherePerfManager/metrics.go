@@ -70,10 +70,10 @@ func (v *VspherePerfManager) filterWithConfig(metrics []types.PerfMetricId, enti
 	for _, metric := range metrics {
 
 		ok := u.Any(v.Config.Metrics[PmSupportedEntities(entity.Entity.Type)], func(metricDef MetricDef, _ int) bool {
-			if len(metricDef.Metric) == 0 {
+			if len(metricDef.Metrics) == 0 {
 				return true
 			}
-			for _, pattern := range metricDef.Metric {
+			for _, pattern := range metricDef.Metrics {
 				if pattern == ALL[0] {
 					return true
 				}
@@ -87,10 +87,10 @@ func (v *VspherePerfManager) filterWithConfig(metrics []types.PerfMetricId, enti
 
 		if ok {
 			ok = u.Any(v.Config.Metrics[PmSupportedEntities(entity.Entity.Type)], func(metricDef MetricDef, _ int) bool {
-				if len(metricDef.Instance) == 0 {
+				if len(metricDef.Instances) == 0 {
 					return true
 				}
-				for _, pattern := range metricDef.Instance {
+				for _, pattern := range metricDef.Instances {
 					if pattern == ALL[0] {
 						return true
 					}

@@ -15,9 +15,9 @@ type Vcenter struct {
 }
 
 type MetricDef struct {
-	Metric   []string
-	Instance []string
-	Entities []string
+	Metrics   []string
+	Instances []string
+	Entities  []string
 }
 
 type PmSupportedEntities string
