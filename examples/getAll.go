@@ -54,7 +54,7 @@ func main() {
 					},
 					pm.MetricDef{
 						Metrics:   []string{"disk.*", "mem.*"},
-						//Entities:  []string{"dropbox"},
+						Entities:  []string{"dropbox"},
 					},
 				},
 			},
