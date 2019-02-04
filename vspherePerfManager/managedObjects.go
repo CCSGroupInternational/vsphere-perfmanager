@@ -129,7 +129,7 @@ func (v *VspherePerfManager) GetProperty(o ManagedObject, property string) types
 	})
 
 	if props == nil {
-		return "Property doesn't exist"
+		return nil
 	}
 
 	switch prop := props.([]types.DynamicProperty)[0].Val.(type) {
