@@ -5,6 +5,7 @@ import (
 	"os"
 	"fmt"
 	pm "github.com/CCSGroupInternational/vsphere-perfmanager/vspherePerfManager"
+	"time"
 )
 
 func main() {
@@ -22,7 +23,7 @@ func main() {
 				Host:     os.Getenv("VSPHERE_HOST"),
 				Insecure: insecure,
 			},
-			Samples: 6,
+			Interval: time.Duration(120 * time.Second),
 			Data: map[string][]string{
 				string(pm.VMs):               {"runtime.host"},
 				string(pm.Hosts):             {"parent"},

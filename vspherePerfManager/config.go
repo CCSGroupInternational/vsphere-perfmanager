@@ -1,10 +1,12 @@
 package vspherePerfManager
 
+import "time"
+
 type Config struct {
-	Vcenter Vcenter
-	Samples int32
-	Metrics map[PmSupportedEntities][]MetricDef
-	Data    map[string][]string
+	Vcenter  Vcenter
+	Interval time.Duration
+	Metrics  map[PmSupportedEntities][]MetricDef
+	Data     map[string][]string
 }
 
 type Vcenter struct {

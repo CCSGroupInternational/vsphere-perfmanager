@@ -22,7 +22,7 @@ func (v *VspherePerfManager) query(managedObject ManagedObject) (ManagedObject, 
 		summary.RefreshRate = 300
 	}
 
-	startTime, err := getStartTime(v.Config.Samples, summary.RefreshRate, v.client )
+	startTime, err := getStartTime(v.Config.Interval, summary.RefreshRate, v.client )
 
 	if err != nil {
 		return managedObject, err
@@ -72,7 +72,8 @@ func (v *VspherePerfManager) setMetrics(managedObject *ManagedObject, metrics []
 	}
 }
 
-func getStartTime(samples int32, intervalId int32, client *govmomi.Client) (time.Time, error) {
+func getStartTime(interval time.Duration, intervalId int32, client *govmomi.Client) (time.Time, error) {
+	samples := int32(interval.Seconds()) / intervalId
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
