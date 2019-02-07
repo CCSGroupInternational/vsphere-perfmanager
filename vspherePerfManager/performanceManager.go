@@ -56,15 +56,15 @@ func (v *VspherePerfManager) query(managedObject ManagedObject) (ManagedObject, 
 func (v *VspherePerfManager) setMetrics(managedObject *ManagedObject, metrics []types.BasePerfEntityMetricBase) {
 	for _, base := range metrics {
 		pem := base.(*types.PerfEntityMetric)
-
 		for _, baseSerie := range pem.Value {
 			serie := baseSerie.(*types.PerfMetricIntSeries)
-			for _, value := range serie.Value {
+			for item, value := range serie.Value {
 				managedObject.Metrics = append(managedObject.Metrics, Metric{
 					Info: v.metricsInfo[serie.Id.CounterId],
 					Value: metricValue{
 						Value: value,
 						Instance: serie.Id.Instance,
+						Timestamp: pem.SampleInfo[item].Timestamp,
 					},
 				})
 			}

@@ -79,6 +79,7 @@ func main() {
 			fmt.Println("Metrics : " + metric.Info.Metric)
 			fmt.Println("Metrics Instances: " + metric.Value.Instance)
 			fmt.Println("Result: " + strconv.FormatInt(metric.Value.Value, 10))
+			fmt.Println( metric.Value.Timestamp )
 		}
 	}
 

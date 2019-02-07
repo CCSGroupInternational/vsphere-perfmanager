@@ -22,8 +22,9 @@ type metricInfo struct {
 }
 
 type metricValue struct {
-	Value    int64
-	Instance string
+	Value     int64
+	Instance  string
+	Timestamp time.Time
 }
 
 // ProviderSummary wraps the QueryPerfProviderSummary method, caching the value based on entity.Type.
