@@ -23,7 +23,7 @@ func main() {
 				Host:     os.Getenv("VSPHERE_HOST"),
 				Insecure: insecure,
 			},
-			Interval: time.Duration(120 * time.Second),
+			Interval: time.Duration(600 * time.Second),
 			Data: map[string][]string{
 				string(pm.VMs):               {"runtime.host"},
 				string(pm.Hosts):             {"parent"},
@@ -56,6 +56,24 @@ func main() {
 					pm.MetricDef{
 						Metrics:   []string{"disk.*", "mem.*"},
 						Entities:  []string{"dropbox"},
+					},
+				},
+			},
+			Rollup: pm.Rollup{
+				RollupType: []pm.RollupTypes{pm.Maximum, pm.Average},
+				Interval: time.Duration(60 * time.Second),
+				Metrics: map[pm.PmSupportedEntities][]pm.RollupMetrics{
+					pm.VMs: {
+						pm.RollupMetrics{
+							Metrics:    []string{"net.*"},
+							RollupType: []pm.RollupTypes{pm.Latest, pm.Average},
+							Interval:   time.Duration(150 * time.Second),
+						},
+						pm.RollupMetrics{
+							Metrics:   []string{"disk.*", "mem.*"},
+							RollupType: []pm.RollupTypes{pm.Average},
+							Interval:   time.Duration(120 * time.Second),
+						},
 					},
 				},
 			},
