@@ -24,9 +24,9 @@ type MetricDef struct {
 }
 
 type Rollup struct {
-	RollupType   []RollupTypes
-	Interval     time.Duration
-	Metrics      map[PmSupportedEntities][]RollupMetrics
+	RollupType []RollupTypes
+	Interval   time.Duration
+	Metrics    map[PmSupportedEntities][]RollupMetrics
 }
 
 type RollupMetrics struct {
@@ -48,14 +48,13 @@ const (
 	Clusters          PmSupportedEntities = "ClusterComputeResource"
 	Vapps             PmSupportedEntities = "VirtualApp"
 	Datacenters       PmSupportedEntities = "Datacenter"
-	Folders                               = "Folder"
-	DatastoreClusters                     = "StoragePod"
+	Folders           PmSupportedEntities = "Folder"
+	DatastoreClusters PmSupportedEntities = "StoragePod"
 	Average           RollupTypes         = "average"
 	Maximum           RollupTypes         = "maximum"
 	Minimum           RollupTypes         = "minimum"
 	Summation         RollupTypes         = "summation"
 	Latest            RollupTypes         = "latest"
-
 )
 
 var ALL = []string{"*"}
