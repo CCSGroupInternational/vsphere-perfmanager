@@ -50,6 +50,7 @@ const (
 	Datacenters       PmSupportedEntities = "Datacenter"
 	Folders           PmSupportedEntities = "Folder"
 	DatastoreClusters PmSupportedEntities = "StoragePod"
+	ComputeResources  PmSupportedEntities = "ComputeResource"
 	Average           RollupTypes         = "average"
 	Maximum           RollupTypes         = "maximum"
 	Minimum           RollupTypes         = "minimum"
