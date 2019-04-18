@@ -2,7 +2,6 @@ package vspherePerfManager
 
 import (
 	"context"
-	"fmt"
 	u "github.com/ahl5esoft/golang-underscore"
 	"github.com/vmware/govmomi"
 	"net/url"
@@ -56,11 +55,11 @@ func (v *VspherePerfManager) Disconnect() error {
 	return v.client.Logout(v.context)
 }
 
-func (v *VspherePerfManager) Get(entityType PmSupportedEntities) []ManagedObject {
+func (v *VspherePerfManager) Get(entityType PmSupportedEntities) ([]ManagedObject, error) {
 	return v.fetch(string(entityType))
 }
 
-func (v *VspherePerfManager) fetch(ObjectType string) []ManagedObject {
+func (v *VspherePerfManager) fetch(ObjectType string) ([]ManagedObject, error) {
 	var ok bool
 	var entities []ManagedObject
 
@@ -81,11 +80,11 @@ func (v *VspherePerfManager) fetch(ObjectType string) []ManagedObject {
 		if ok {
 			result, err := v.query(entity)
 			if err != nil {
-				fmt.Errorf("The following error occorred when query the entity "+v.GetProperty(entity, "name").(string)+": %g ", err)
+				return nil, err
 			} else {
 				entities = append(entities, result)
 			}
 		}
 	}
-	return entities
+	return entities, nil
 }
