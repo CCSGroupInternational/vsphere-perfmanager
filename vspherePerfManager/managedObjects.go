@@ -14,6 +14,7 @@ type ManagedObject struct {
 	Entity types.ManagedObjectReference
 	Properties []types.DynamicProperty
 	Metrics []Metric
+	Error error
 }
 
 func (v *VspherePerfManager) managedObjects() error {

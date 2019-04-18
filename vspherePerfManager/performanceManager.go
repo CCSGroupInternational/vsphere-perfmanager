@@ -10,14 +10,15 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-func (v *VspherePerfManager) query(managedObject ManagedObject) (ManagedObject, error) {
-
+func (v *VspherePerfManager) query(managedObject ManagedObject) ManagedObject {
+	managedObject.Error = nil
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	summary, err := v.ProviderSummary(managedObject.Entity)
 	if err != nil {
-		return managedObject, err
+		managedObject.Error = nil
+		return managedObject
 	}
 
 	if summary.RefreshRate == -1 {
@@ -27,12 +28,14 @@ func (v *VspherePerfManager) query(managedObject ManagedObject) (ManagedObject, 
 	startTime, err := getStartTime(v.Config.Interval, summary.RefreshRate, v.client )
 
 	if err != nil {
-		return managedObject, err
+		managedObject.Error = nil
+		return managedObject
 	}
 
 	metrics, err := v.getAvailablePerfMetrics(managedObject.Entity, summary.RefreshRate, &startTime)
 	if err != nil {
-		return managedObject, err
+		managedObject.Error = nil
+		return managedObject
 	}
 	metrics = v.filterWithConfig(metrics, managedObject)
 	metricsSpec := createPerfQuerySpec(managedObject.Entity, metrics, summary.RefreshRate, &startTime)
@@ -45,17 +48,19 @@ func (v *VspherePerfManager) query(managedObject ManagedObject) (ManagedObject, 
 		perfQueryRes, err := methods.QueryPerf(ctx, v.client.RoundTripper, &perfQueryReq )
 
 		if err != nil {
-			return managedObject, err
+			managedObject.Error = nil
+			return managedObject
 		}
 
 		if len(perfQueryRes.Returnval) == 0 {
-			return managedObject, err
+			managedObject.Error = nil
+			return managedObject
 		}
 
 		v.setMetrics(&managedObject, perfQueryRes.Returnval)
 	}
 
-	return managedObject, nil
+	return managedObject
 }
 
 func (v *VspherePerfManager) setMetrics(managedObject *ManagedObject, metrics []types.BasePerfEntityMetricBase) {

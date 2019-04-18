@@ -55,11 +55,11 @@ func (v *VspherePerfManager) Disconnect() error {
 	return v.client.Logout(v.context)
 }
 
-func (v *VspherePerfManager) Get(entityType PmSupportedEntities) ([]ManagedObject, error) {
+func (v *VspherePerfManager) Get(entityType PmSupportedEntities) []ManagedObject {
 	return v.fetch(string(entityType))
 }
 
-func (v *VspherePerfManager) fetch(ObjectType string) ([]ManagedObject, error) {
+func (v *VspherePerfManager) fetch(ObjectType string) []ManagedObject {
 	var ok bool
 	var entities []ManagedObject
 
@@ -78,13 +78,8 @@ func (v *VspherePerfManager) fetch(ObjectType string) ([]ManagedObject, error) {
 		}
 
 		if ok {
-			result, err := v.query(entity)
-			if err != nil {
-				return nil, err
-			} else {
-				entities = append(entities, result)
-			}
+			entities = append(entities, v.query(entity))
 		}
 	}
-	return entities, nil
+	return entities
 }
