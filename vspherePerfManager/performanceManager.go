@@ -17,7 +17,7 @@ func (v *VspherePerfManager) query(managedObject ManagedObject) ManagedObject {
 
 	summary, err := v.ProviderSummary(managedObject.Entity)
 	if err != nil {
-		managedObject.Error = nil
+		managedObject.Error = err
 		return managedObject
 	}
 
@@ -28,13 +28,13 @@ func (v *VspherePerfManager) query(managedObject ManagedObject) ManagedObject {
 	startTime, err := getStartTime(v.Config.Interval, summary.RefreshRate, v.client )
 
 	if err != nil {
-		managedObject.Error = nil
+		managedObject.Error = err
 		return managedObject
 	}
 
 	metrics, err := v.getAvailablePerfMetrics(managedObject.Entity, summary.RefreshRate, &startTime)
 	if err != nil {
-		managedObject.Error = nil
+		managedObject.Error = err
 		return managedObject
 	}
 	metrics = v.filterWithConfig(metrics, managedObject)
@@ -48,12 +48,12 @@ func (v *VspherePerfManager) query(managedObject ManagedObject) ManagedObject {
 		perfQueryRes, err := methods.QueryPerf(ctx, v.client.RoundTripper, &perfQueryReq )
 
 		if err != nil {
-			managedObject.Error = nil
+			managedObject.Error = err
 			return managedObject
 		}
 
 		if len(perfQueryRes.Returnval) == 0 {
-			managedObject.Error = nil
+			managedObject.Error = err
 			return managedObject
 		}
 
