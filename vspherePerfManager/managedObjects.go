@@ -82,14 +82,14 @@ func (v *VspherePerfManager) retrieveProperties(objectSet []types.ObjectSpec, ob
 		return err
 	}
 
-	v.objects = make(map[string]map[string]ManagedObject)
+	v.Objects = make(map[string]map[string]ManagedObject)
 	for _, objectType := range objectTypes {
-		v.objects[objectType] = make(map[string]ManagedObject)
+		v.Objects[objectType] = make(map[string]ManagedObject)
 	}
 
 	for _, objectContent := range propRes.Returnval {
-		if _, ok := v.objects[objectContent.Obj.Type]; ok {
-			v.objects[objectContent.Obj.Type][objectContent.Obj.Value] = ManagedObject{
+		if _, ok := v.Objects[objectContent.Obj.Type]; ok {
+			v.Objects[objectContent.Obj.Type][objectContent.Obj.Value] = ManagedObject{
 				Entity: objectContent.Obj,
 				Properties: objectContent.PropSet,
 			}
@@ -135,14 +135,14 @@ func (v *VspherePerfManager) GetProperty(o ManagedObject, property string) types
 
 	switch prop := props.([]types.DynamicProperty)[0].Val.(type) {
 		case types.ManagedObjectReference:
-			return v.objects[prop.Type][prop.Value]
+			return v.Objects[prop.Type][prop.Value]
 		default:
 			return prop
 	}
 }
 
 func (v *VspherePerfManager) GetObject(entityType string, objectId string) ManagedObject {
-	return v.objects[entityType][objectId]
+	return v.Objects[entityType][objectId]
 }
 
 func setProperties(propertiesFromconfig map[string][]string) []types.PropertySpec {

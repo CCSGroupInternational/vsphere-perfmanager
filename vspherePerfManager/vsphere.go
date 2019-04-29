@@ -65,7 +65,7 @@ func (v *VspherePerfManager) fetch(ObjectType string) []ManagedObject {
 
 	regexs := u.Pluck(v.Config.Metrics[PmSupportedEntities(ObjectType)], "Entities")
 
-	for _, entity := range v.objects[ObjectType] {
+	for _, entity := range v.Objects[ObjectType] {
 
 		if regexs != nil {
 			// Check If entity is to query
