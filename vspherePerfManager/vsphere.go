@@ -12,7 +12,7 @@ type VspherePerfManager struct {
 	Config      Config
 	client      *govmomi.Client
 	metricsInfo map[int32]metricInfo
-	objects     map[string]map[string]ManagedObject
+	Objects     map[string]map[string]ManagedObject
 	context     context.Context
 }
 
