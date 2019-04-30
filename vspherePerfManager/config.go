@@ -51,6 +51,7 @@ const (
 	Folders           PmSupportedEntities = "Folder"
 	DatastoreClusters PmSupportedEntities = "StoragePod"
 	ComputeResources  PmSupportedEntities = "ComputeResource"
+	VirtualSwitches   PmSupportedEntities = "VmwareDistributedVirtualSwitch"
 	Average           RollupTypes         = "average"
 	Maximum           RollupTypes         = "maximum"
 	Minimum           RollupTypes         = "minimum"
