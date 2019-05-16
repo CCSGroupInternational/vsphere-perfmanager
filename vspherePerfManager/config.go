@@ -4,9 +4,10 @@ import "time"
 
 type Config struct {
 	Vcenter
-	Interval time.Duration
-	Metrics  map[PmSupportedEntities][]MetricDef
-	Data     map[string][]string
+	Interval   time.Duration
+	Metrics    map[PmSupportedEntities][]MetricDef
+	Data       map[string][]string
+	MaxQueries int
 	Rollup
 }
 

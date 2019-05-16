@@ -1,13 +1,13 @@
 package vspherePerfManager
 
 import (
-	"github.com/vmware/govmomi/vim25/types"
-	"time"
-	"github.com/vmware/govmomi/vim25/methods"
 	"context"
-	"github.com/vmware/govmomi"
-	"strings"
 	"github.com/thoas/go-funk"
+	"github.com/vmware/govmomi"
+	"github.com/vmware/govmomi/vim25/methods"
+	"github.com/vmware/govmomi/vim25/types"
+	"strings"
+	"time"
 )
 
 func (v *VspherePerfManager) query(managedObject ManagedObject) ManagedObject {
@@ -32,34 +32,35 @@ func (v *VspherePerfManager) query(managedObject ManagedObject) ManagedObject {
 		return managedObject
 	}
 
-	metrics, err := v.getAvailablePerfMetrics(managedObject.Entity, summary.RefreshRate, &startTime)
+	availableMetrics, err := v.getAvailablePerfMetrics(managedObject.Entity, summary.RefreshRate, &startTime)
 	if err != nil {
 		managedObject.Error = err
 		return managedObject
 	}
-	metricsRes := v.filterWithConfig(metrics.Returnval, managedObject)
-	metricsSpec := createPerfQuerySpec(managedObject.Entity, metricsRes, summary.RefreshRate, &startTime)
 
-	if len(metricsSpec[0].MetricId) != 0 {
-		perfQueryReq := types.QueryPerf{
-			This: *v.client.ServiceContent.PerfManager,
-			QuerySpec: metricsSpec,
+	metrics := v.filterWithConfig(availableMetrics.Returnval, managedObject)
+	for _, metrics := range v.getDividedMetrics(metrics) {
+		metricsSpec := createPerfQuerySpec(managedObject.Entity, metrics, summary.RefreshRate, &startTime)
+		if len(metricsSpec[0].MetricId) != 0 {
+			perfQueryReq := types.QueryPerf{
+				This: *v.client.ServiceContent.PerfManager,
+				QuerySpec: metricsSpec,
+			}
+			perfQueryRes, err := methods.QueryPerf(ctx, v.client.RoundTripper, &perfQueryReq )
+
+			if err != nil {
+				managedObject.Error = err
+				return managedObject
+			}
+
+			if len(perfQueryRes.Returnval) == 0 {
+				managedObject.Error = err
+				return managedObject
+			}
+
+			v.setMetrics(&managedObject, perfQueryRes.Returnval)
 		}
-		perfQueryRes, err := methods.QueryPerf(ctx, v.client.RoundTripper, &perfQueryReq )
-
-		if err != nil {
-			managedObject.Error = err
-			return managedObject
-		}
-
-		if len(perfQueryRes.Returnval) == 0 {
-			managedObject.Error = err
-			return managedObject
-		}
-
-		v.setMetrics(&managedObject, perfQueryRes.Returnval)
 	}
-
 	return managedObject
 }
 
@@ -131,6 +132,25 @@ func (v *VspherePerfManager) getRollupIntervalFromConfig(managedObject ManagedOb
 	return RollupMetrics{
 		Interval: time.Duration(0 * time.Second),
 	}
+}
+
+func (v *VspherePerfManager) getDividedMetrics(metrics []types.PerfMetricId) [][]types.PerfMetricId {
+	var dividedMetrics [][]types.PerfMetricId
+	var chunkSize int
+	if v.Config.MaxQueries == 0 {
+		chunkSize = len(metrics)
+	} else {
+		chunkSize = v.Config.MaxQueries
+	}
+	for i := 0; i < len(metrics); i += chunkSize {
+		end := i + chunkSize
+
+		if end > len(metrics) {
+			end = len(metrics)
+		}
+		dividedMetrics = append(dividedMetrics, metrics[i:end])
+	}
+	return dividedMetrics
 }
 
 func getStartTime(interval time.Duration, intervalId int32, client *govmomi.Client) (time.Time, error) {
