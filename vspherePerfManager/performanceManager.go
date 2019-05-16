@@ -37,8 +37,8 @@ func (v *VspherePerfManager) query(managedObject ManagedObject) ManagedObject {
 		managedObject.Error = err
 		return managedObject
 	}
-	metrics = v.filterWithConfig(metrics, managedObject)
-	metricsSpec := createPerfQuerySpec(managedObject.Entity, metrics, summary.RefreshRate, &startTime)
+	metricsRes := v.filterWithConfig(metrics.Returnval, managedObject)
+	metricsSpec := createPerfQuerySpec(managedObject.Entity, metricsRes, summary.RefreshRate, &startTime)
 
 	if len(metricsSpec[0].MetricId) != 0 {
 		perfQueryReq := types.QueryPerf{

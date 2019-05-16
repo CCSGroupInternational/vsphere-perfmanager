@@ -45,7 +45,7 @@ func (v *VspherePerfManager) ProviderSummary(entity types.ManagedObjectReference
 	return &res.Returnval, nil
 }
 
-func (v *VspherePerfManager) getAvailablePerfMetrics(entity types.ManagedObjectReference, intervalId int32, startTime *time.Time) ([]types.PerfMetricId, error) {
+func (v *VspherePerfManager) getAvailablePerfMetrics(entity types.ManagedObjectReference, intervalId int32, startTime *time.Time) (*types.QueryAvailablePerfMetricResponse, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -58,7 +58,7 @@ func (v *VspherePerfManager) getAvailablePerfMetrics(entity types.ManagedObjectR
 	}
 
 	perfRes, err := methods.QueryAvailablePerfMetric(ctx, v.client.RoundTripper, &perfReq )
-	return perfRes.Returnval, err
+	return perfRes, err
 }
 
 func (v *VspherePerfManager) filterWithConfig(metrics []types.PerfMetricId, entity ManagedObject) []types.PerfMetricId {
