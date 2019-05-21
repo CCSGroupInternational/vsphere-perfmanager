@@ -7,7 +7,7 @@ type Config struct {
 	Interval   time.Duration
 	Metrics    map[PmSupportedEntities][]MetricDef
 	Data       map[string][]string
-	MaxQueries int
+	MaxMetrics int
 	Rollup
 }
 

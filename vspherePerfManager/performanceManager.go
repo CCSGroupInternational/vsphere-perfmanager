@@ -137,10 +137,10 @@ func (v *VspherePerfManager) getRollupIntervalFromConfig(managedObject ManagedOb
 func (v *VspherePerfManager) getDividedMetrics(metrics []types.PerfMetricId) [][]types.PerfMetricId {
 	var dividedMetrics [][]types.PerfMetricId
 	var chunkSize int
-	if v.Config.MaxQueries == 0 {
+	if v.Config.MaxMetrics == 0 {
 		chunkSize = len(metrics)
 	} else {
-		chunkSize = v.Config.MaxQueries
+		chunkSize = v.Config.MaxMetrics
 	}
 	for i := 0; i < len(metrics); i += chunkSize {
 		end := i + chunkSize
